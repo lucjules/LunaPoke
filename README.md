@@ -4,10 +4,9 @@ Jeu d'aventure et de capture de créatures au style rétro (console portable), �
 
 ## Lancer le jeu
 
-En ligne : https://lucjules.github.io/LunaPoke/ — sur téléphone, le menu du navigateur propose « Ajouter à l'écran d'accueil » pour l'installer comme une application, qui marche ensuite hors ligne.
+En ligne : https://lucjules.github.io/LunaPoke/ (aussi accessible depuis le hub des jeux : https://lucjules.github.io/jeux.html) — sur téléphone, le menu du navigateur propose « Ajouter à l'écran d'accueil » pour l'installer comme une application, qui marche ensuite hors ligne.
 
-En local : 
-Ouvrir `index.html` dans un navigateur (ordinateur ou mobile). Tout est inclus, polices comprises (dossier `fonts/`) : le jeu fonctionne aussi hors ligne.
+En local : ouvrir `index.html` dans un navigateur (ordinateur ou mobile). Tout est inclus, polices comprises (dossier `fonts/`) : le jeu fonctionne aussi hors ligne.
 
 ## Contrôles
 
@@ -18,7 +17,7 @@ Ouvrir `index.html` dans un navigateur (ordinateur ou mobile). Tout est inclus, 
 | B (retour ; maintenu = courir) | X | Bouton B |
 | START (menu) | Entrée | START |
 | SELECT | P | SELECT |
-| Raccourcis | E équipe, B sac, Q quêtes, V bestiaire, H histoire, G chemin, T vue 3D | — |
+| Raccourcis | M menu, E équipe, B sac, Q quêtes, V bestiaire, H histoire, G chemin, T vue 3D | — |
 
 ## Contenu
 

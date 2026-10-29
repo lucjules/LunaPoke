@@ -80,7 +80,15 @@ function fixSave(g) {
   g.sx = Object.assign(d.sx, g.sx);
   g.dex.s = g.dex.s || [];
   g.dex.c = g.dex.c || [];
-  const okC = c => c && typeof c == 'object' && Number.isInteger(c.s) && c.s >= 0 && c.lv > 0;
+  // numéro d'espèce connu : les actes III et IV ajoutent des espèces après ce fichier, donc le
+  // contrôle du maximum n'a lieu qu'une fois tout chargé (fixSave.all, mis par main.js)
+  const okC = c =>
+    c &&
+    typeof c == 'object' &&
+    Number.isInteger(c.s) &&
+    c.s >= 0 &&
+    (c.s < SP.length || !fixSave.all) &&
+    c.lv > 0;
   g.party = g.party.filter(okC);
   g.box = g.box.filter(okC);
   g.party.concat(g.box).forEach(c => {

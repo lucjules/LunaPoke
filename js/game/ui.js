@@ -717,7 +717,7 @@ function slotInfo(n) {
 function slotData(n) {
   try {
     const g = JSON.parse(localStorage.getItem(n == 1 ? 'aerelia' : 'aerelia_' + n));
-    return g && g.party && g.party.length ? g : null;
+    return g && typeof g == 'object' && fixSave(g).party.length ? g : null;
   } catch (e) {
     return null;
   }
