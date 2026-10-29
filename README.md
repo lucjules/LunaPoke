@@ -4,7 +4,7 @@ Jeu d'aventure et de capture de créatures au style rétro (console portable), �
 
 ## Lancer le jeu
 
-Ouvrir `index.html` dans un navigateur (ordinateur ou mobile). La seule ressource externe est la police Google Fonts (Pixelify Sans / Press Start 2P) ; sans connexion, le jeu reste jouable avec une police de secours.
+Ouvrir `index.html` dans un navigateur (ordinateur ou mobile). Tout est inclus, polices comprises (dossier `fonts/`) : le jeu fonctionne aussi hors ligne.
 
 ## Contrôles
 
@@ -30,7 +30,9 @@ Ouvrir `index.html` dans un navigateur (ordinateur ou mobile). La seule ressourc
 
 ```
 index.html              page du jeu : structure HTML et ordre de chargement
+fonts/                  polices Pixelify Sans et Press Start 2P (licence SIL OFL)
 css/
+  fonts.css             déclaration des polices
   layout.css            mise en page, croix directionnelle, boutons, mobile
   retro.css             style « console portable » : dialogues, menus, écran titre, combat
   menus.css             finitions des menus et écran des sauvegardes
@@ -65,5 +67,9 @@ js/
 ```
 
 Les fichiers sont de simples scripts (pas de modules) qui partagent les mêmes variables globales. **L'ordre des balises `<script>` dans `index.html` compte** : un fichier peut utiliser ce que définissent les fichiers chargés avant lui. Les fonctions des fichiers suivants restent utilisables dans du code exécuté plus tard (pendant le jeu), mais pas au moment du chargement.
+
+Le code est mis en forme avec [Prettier](https://prettier.io) (réglages dans `.prettierrc.json`) : `npx prettier --write "js/**/*.js" "css/*.css"`.
+
+La table des numéros de cartes (`maps[0]` = Brumeval, etc.) se trouve en tête de `js/game/maps.js`.
 
 Pour tester en local, ouvrir `index.html` directement ou lancer un petit serveur : `python3 -m http.server` puis aller sur http://localhost:8000.

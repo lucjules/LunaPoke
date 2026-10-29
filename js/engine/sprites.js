@@ -4127,7 +4127,7 @@ const SPNT = [
   { a: 'flame', lamp: 1, c: ['#e8541e', '#ffc84a', '#fff0a0'] },
   { a: 'pearl', c: ['#5a8fb8', '#e8e0f0', '#ffffff'] },
   { a: 'orb', c: ['#3a2f78', '#8a6bff', '#ffe9ff'] },
-  { a: 'orb', c: ['#6a8cff', '#ffd9ff', '#ffffff'] },
+  { a: 'star', big: 1, c: ['#cfe0ff', '#4a78e8', '#ffffff'] },
   { a: 'otter', c: ['#b98a64', '#7fc8d8', '#ffffff'] },
   { a: 'otter', k: 1, c: ['#9a6a4c', '#58c0d8', '#fff0c0'] },
   { a: 'jelly', c: ['#bfe3ff', '#8ec5ff', '#ffffff'] },

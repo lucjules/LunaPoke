@@ -12,7 +12,8 @@ let runB = 0,
   swv = [0, 0],
   keys = {};
 const hs = (x, y) => ((x * 73856093) ^ (y * 19349663)) >>> 0,
-  ROOF = ['#c0392b', '#8e44ad', '#d4a017', '#2e86c1'];
+  // toits des maisons : teintes distinctes du Centre (rouge), de l'Arène (or) et du Labo (bleu)
+  ROOF = ['#9a5a3a', '#2f7f7a', '#5a8a3e', '#7a4a7e'];
 const TH0 = {
   g: ['#86cb57', '#92d664', '#7bc04d'],
   bl: ['#69aa41', '#a8e27c'],
@@ -997,6 +998,84 @@ function marker(c, x, y) {
   cx.fill();
   cx.stroke();
 }
+// bloc de bâtiment contenant la case (x, y) : bords, rangée du mur et type (porte C/L/B/K, sinon H)
+function bldg(g, x, y) {
+  const isB = (xx, yy) => 'HCLBK'.includes(g[yy]?.[xx] || ' ');
+  let x0 = x,
+    x1 = x,
+    y0 = y,
+    yw = y;
+  while (isB(x0 - 1, y)) x0--;
+  while (isB(x1 + 1, y)) x1++;
+  while (isB(x, y0 - 1)) y0--;
+  while (isB(x, yw + 1)) yw++;
+  let kind = 'H';
+  for (let i = x0; i <= x1; i++)
+    if (g[yw][i] != 'H') {
+      kind = g[yw][i];
+      break;
+    }
+  return { x0, x1, y0, yw, kind };
+}
+// cheminée (maisons) sur la rangée du haut, emblème (Centre, Arène, Labo) sur la rangée du bas
+function roofDeco(B, rr, nR, left, py) {
+  const w = B.x1 - B.x0 + 1,
+    F = (X, Y, a, b, c) => {
+      cx.fillStyle = c;
+      cx.fillRect(Math.round(X), Math.round(Y), a, b);
+    },
+    D = (X, Y, r, c) => {
+      cx.fillStyle = c;
+      cx.beginPath();
+      cx.arc(X, Y, r, 0, 7);
+      cx.fill();
+    },
+    h = hs(B.x0 * 7 + G.map, B.y0 * 13);
+  if (rr == 0 && (B.kind == 'H' || B.kind == 'K') && w >= 3 && h % 3 != 2) {
+    const X = left + (1 + ((h >> 3) % (w - 2))) * T + 10,
+      Y = py - 7;
+    F(X + 2, Y + 18, 11, 3, 'rgba(0,0,0,.25)');
+    F(X, Y, 10, 19, '#8a4a36');
+    for (let j = 0; j < 19; j += 4) {
+      F(X, Y + j, 10, 1, '#6e3a2a');
+      F(X + (j % 8 ? 5 : 2), Y + j, 1, 4, '#6e3a2a');
+    }
+    F(X, Y, 3, 19, 'rgba(255,255,255,.18)');
+    F(X - 1, Y - 2, 12, 3, '#5a5450');
+    F(X + 2, Y - 1, 6, 1, '#1e1a1a');
+  }
+  if (rr == nR - 1 && 'CLB'.includes(B.kind)) {
+    const X = left + (w * T) / 2,
+      Y = py + 12;
+    D(X + 1, Y + 2, 9, 'rgba(0,0,0,.3)');
+    D(X, Y, 9, '#2a2420');
+    D(X, Y, 7.5, B.kind == 'B' ? '#3a2c18' : '#f8f6ee');
+    if (B.kind == 'C') {
+      F(X - 1.5, Y - 5, 3, 10, '#d33');
+      F(X - 5, Y - 1.5, 10, 3, '#d33');
+    } else if (B.kind == 'B') {
+      cx.fillStyle = '#ffd23f';
+      cx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI / 2 + (i * Math.PI) / 5,
+          r = i % 2 ? 2.6 : 6;
+        cx.lineTo(X + Math.cos(a) * r, Y + Math.sin(a) * r);
+      }
+      cx.fill();
+    } else {
+      // fiole du laboratoire
+      F(X - 1.5, Y - 5, 3, 4, '#5468a0');
+      cx.fillStyle = '#5468a0';
+      cx.beginPath();
+      cx.moveTo(X - 2, Y - 1);
+      cx.lineTo(X - 5, Y + 5);
+      cx.lineTo(X + 5, Y + 5);
+      cx.lineTo(X + 2, Y - 1);
+      cx.fill();
+      F(X - 3, Y + 2, 6, 2, '#7fd0ff');
+    }
+  }
+}
 function tile(c, x, y, px, py, r, t, g, road) {
   const mp = maps[G.map];
   if (mp.in) return itile(c, x, y, px, py, r, t, mp.k);
@@ -1312,27 +1391,45 @@ function tile(c, x, y, px, py, r, t, g, road) {
     tree(px, py, c == '#', r);
   } else {
     // bâtiments
-    const roof = c == 'H' && g[y + 1]?.[x] == 'H',
-      rc = ROOF[(Math.floor(x / 4) + G.map) % 4],
-      BL = 'HCLBK',
-      lt = q => BL.includes(q || ' ');
+    const BL = 'HCLBK',
+      lt = q => BL.includes(q || ' '),
+      B = bldg(g, x, y),
+      roof = y < B.yw,
+      // même couleur de toit qu'en 3D : selon le type de bâtiment, sinon une teinte par maison
+      rc = { C: '#ce3e3a', L: '#5468a0', B: '#d8aa36' }[B.kind] || ROOF[((B.x0 >> 2) + G.map) % 4];
     if (roof) {
+      const rr = y - B.y0,
+        nR = B.yw - B.y0;
       R(0, 0, T, T, rc);
+      // tuiles en quinconce, avec de légères variations de teinte
       for (let j = 0; j < 4; j++) {
         R(0, j * 8, T, 1, 'rgba(255,255,255,.12)');
         R(0, j * 8 + 6, T, 2, 'rgba(0,0,0,.22)');
-        for (let i = 0; i < 5; i++) R(i * 8 + (j % 2) * 4, j * 8 + 1, 1, 5, 'rgba(0,0,0,.16)');
+        for (let i = -1; i < 5; i++) {
+          const xx = i * 8 + ((j + rr * 4) % 2) * 4,
+            v = hs(x * 5 + i, y * 4 + j) % 6;
+          R(xx, j * 8 + 1, 1, 5, 'rgba(0,0,0,.16)');
+          if (v == 0) R(xx + 1, j * 8 + 1, 7, 5, 'rgba(255,255,255,.08)');
+          else if (v == 1) R(xx + 1, j * 8 + 1, 7, 5, 'rgba(0,0,0,.08)');
+        }
       }
-      if (g[y - 1]?.[x] != 'H') {
-        R(0, 0, T, 3, 'rgba(255,255,255,.35)');
-        R(0, 3, T, 1, 'rgba(0,0,0,.3)');
+      // deux pentes : le versant du haut reçoit plus de lumière
+      if (nR > 1 && rr < nR - 1) R(0, 0, T, T, 'rgba(255,240,210,.16)');
+      else if (nR > 1) R(0, 0, T, T, 'rgba(0,0,0,.06)');
+      if (rr == 0) {
+        // faîtage
+        R(0, 0, T, 4, 'rgba(0,0,0,.28)');
+        R(0, 0, T, 2, 'rgba(255,255,255,.4)');
       }
-      if (g[y + 2]?.[x] != 'H') {
+      if (rr == nR - 1) {
+        // avant-toit et son ombre
         R(0, T - 6, T, 2, 'rgba(255,255,255,.18)');
         R(0, T - 4, T, 4, 'rgba(0,0,0,.38)');
       }
-      if (!lt(nb(-1, 0))) R(0, 0, 2, T, 'rgba(0,0,0,.28)');
-      if (!lt(nb(1, 0))) R(T - 2, 0, 2, T, 'rgba(0,0,0,.28)');
+      if (!lt(nb(-1, 0))) R(0, 0, 3, T, 'rgba(0,0,0,.3)');
+      if (!lt(nb(1, 0))) R(T - 3, 0, 3, T, 'rgba(0,0,0,.3)');
+      // décor du toit, dessiné avec la dernière tuile de la rangée pour ne pas être recouvert
+      if (x == B.x1) roofDeco(B, rr, nR, px - (B.x1 - B.x0) * T, py);
     } else {
       R(0, 0, T, T, '#f1e3c0');
       for (let j = 0; j < 4; j++) R(0, j * 8 + 7, T, 1, 'rgba(0,0,0,.07)');

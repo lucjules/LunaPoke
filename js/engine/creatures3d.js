@@ -103,7 +103,8 @@ function mdRender(prims, key, R, yaw, pitch, o) {
       obx = -ux * cxm - vx * cym + wx * (Z0 - czm),
       oby = -uy * cxm - vy * cym + wy * (Z0 - czm),
       obz = -uz * cxm - vz * cym + wz * (Z0 - czm),
-      rho = Math.max(rx, ry, rz) * 1.04,
+      bx = !!pr.box,
+      rho = (bx ? Math.hypot(rx, ry, rz) : Math.max(rx, ry, rz)) * 1.04,
       i0 = Math.max(0, Math.floor((cxm - rho + W / 2) / s)),
       i1 = Math.min(R - 1, Math.ceil((cxm + rho + W / 2) / s)),
       j0 = Math.max(0, Math.floor((Y0 - cym - rho) / s)),
@@ -120,18 +121,50 @@ function mdRender(prims, key, R, yaw, pitch, o) {
           ox = obx + ux * px + vx * py,
           oy = oby + uy * px + vy * py,
           oz = obz + uz * px + vz * py,
-          ow = ox * wx + oy * wy + oz * wz,
-          disc = ow * ow - A * (ox * ox + oy * oy + oz * oz - 1);
-        if (disc <= 0) continue;
-        const t = (ow - Math.sqrt(disc)) / A,
-          z = Z0 - t,
+          ow = ox * wx + oy * wy + oz * wz;
+        let t, qx, qy, qz;
+        if (bx) {
+          // pavé : intersection du rayon avec le cube unité (méthode des tranches)
+          let tn = -1e9,
+            tf = 1e9,
+            ax = 0;
+          const O = [ox, oy, oz],
+            Wd = [wx, wy, wz];
+          for (let a = 0; a < 3; a++) {
+            if (Math.abs(Wd[a]) < 1e-9) {
+              if (Math.abs(O[a]) > 1) tn = 2e9;
+              continue;
+            }
+            const t1 = (O[a] - 1) / Wd[a],
+              t2 = (O[a] + 1) / Wd[a],
+              lo = Math.min(t1, t2),
+              hi = Math.max(t1, t2);
+            if (lo > tn) {
+              tn = lo;
+              ax = a;
+            }
+            if (hi < tf) tf = hi;
+          }
+          if (tn > tf) continue;
+          t = tn;
+          // normale de la face touchée, dans le repère local
+          const sg = O[ax] - t * Wd[ax] >= 0 ? 1 : -1;
+          qx = ax == 0 ? sg : 0;
+          qy = ax == 1 ? sg : 0;
+          qz = ax == 2 ? sg : 0;
+        } else {
+          const disc = ow * ow - A * (ox * ox + oy * oy + oz * oz - 1);
+          if (disc <= 0) continue;
+          t = (ow - Math.sqrt(disc)) / A;
+          qx = (ox - t * wx) / rx;
+          qy = (oy - t * wy) / ry;
+          qz = (oz - t * wz) / rz;
+        }
+        const z = Z0 - t,
           k = j * R + i;
         if (z <= zb[k]) continue;
         zb[k] = z;
         pb[k] = pi;
-        const qx = (ox - t * wx) / rx,
-          qy = (oy - t * wy) / ry,
-          qz = (oz - t * wz) / rz;
         let nx = M[0] * qx + M[1] * qy + M[2] * qz,
           ny = M[3] * qx + M[4] * qy + M[5] * qz,
           nz = M[6] * qx + M[7] * qy + M[8] * qz;
@@ -1278,30 +1311,33 @@ MD[25] = t => {
 };
 // Titanor — golem de pierre
 MD[26] = t => {
+  // golem de pierre taillé en blocs, comme son sprite
   const o = [],
     br = Math.sin(t / 900) * 0.008,
-    gl = 0.8 + Math.sin(t / 300) * 0.2;
+    gl = 0.75 + Math.sin(t / 300) * 0.25;
   const GY = '#8a8a92',
     GD = '#6a6a74',
     GL = '#aaaab4',
     TL = '#3fe0d0';
+  o.push(MP([0, 0.05, 0], [0.5, 0.035, 0.34], '#4a4a54', { ao: 1 }));
   for (const s of [-1, 1]) {
-    o.push(MP([s * 0.2, 0.15, 0], [0.17, 0.16, 0.18], GD, { ao: 1 }));
-    o.push(MP([s * 0.2, 0.3, 0.02], [0.15, 0.12, 0.15], GY));
+    o.push(MP([s * 0.2, 0.1, 0.02], [0.15, 0.1, 0.17], GD, { box: 1 }));
+    o.push(MP([s * 0.2, 0.3, 0], [0.12, 0.12, 0.13], GY, { box: 1 }));
   }
-  o.push(MP([0, 0.62 + br, 0], [0.4, 0.36 + br, 0.31], GY, { g: 0.15 }));
-  o.push(MP([0, 0.62 + br, 0.2], [0.3, 0.28, 0.18], GL));
-  o.push(MP([0, 0.5 + br, 0.3], [0.34, 0.045, 0.06], GD));
-  o.push(MP([0, 0.63 + br, 0.32], [0.12, 0.09, 0.04], '#2a8a86', { e: 1 }));
+  o.push(MP([0, 0.62 + br, 0], [0.36, 0.24, 0.26], GY, { box: 1, g: 0.15 }));
+  o.push(MP([0, 0.6 + br, 0.27], [0.24, 0.15, 0.02], GL, { box: 1 }));
+  o.push(MP([0, 0.62 + br, 0.3], [0.09, 0.07, 0.02], [63 * gl, 224 * gl, 208 * gl], { box: 1, e: 1 }));
   for (const s of [-1, 1]) {
-    o.push(MP([s * 0.5, 0.86 + br, 0], [0.2, 0.19, 0.2], GL, { g: 0.15 }));
-    o.push(MP([s * 0.54, 0.52 + br, 0.02], [0.14, 0.3, 0.14], GY));
-    o.push(MP([s * 0.54, 0.28 + br, 0.03], [0.16, 0.12, 0.15], GD));
+    o.push(MP([s * 0.46, 0.84 + br, 0], [0.13, 0.11, 0.15], GL, { box: 1, g: 0.15 }));
+    o.push(MP([s * 0.5, 0.55 + br, 0.02], [0.1, 0.2, 0.11], GY, { box: 1 }));
+    o.push(MP([s * 0.52, 0.27 + br, 0.04], [0.13, 0.1, 0.13], GD, { box: 1 }));
   }
-  o.push(MP([0, 1.06 + br, 0.02], [0.31, 0.26, 0.26], GY, { g: 0.15 }));
-  o.push(MP([0, 1.2 + br, 0], [0.26, 0.1, 0.22], GL));
-  for (const s of [-1, 1]) o.push(MP([s * 0.12, 1.08 + br, 0.24], [0.075, 0.04, 0.03], TL, { e: 1 }));
-  o.push(MP([0, 0.95 + br, 0.26], [0.1, 0.02, 0.02], GD));
+  o.push(MP([0, 1.03 + br, 0.02], [0.22, 0.17, 0.2], GY, { box: 1, g: 0.15 }));
+  o.push(MP([0, 1.22 + br, 0], [0.16, 0.04, 0.15], GL, { box: 1 }));
+  o.push(MP([0, 1.03 + br, 0.225], [0.17, 0.045, 0.02], '#1e2a2e', { box: 1 }));
+  for (const s of [-1, 1])
+    o.push(MP([s * 0.08, 1.035 + br, 0.25], [0.045, 0.022, 0.01], TL, { box: 1, e: 1 }));
+  o.push(MP([-0.16, 0.88 + br, 0.12], [0.08, 0.03, 0.08], '#6a9a5a'));
   return o;
 };
 // Braseron — grenouille de feu couronnée
@@ -1355,53 +1391,81 @@ MD[27] = t => {
 };
 // Givrelin — cube de glace
 MD[28] = t => {
+  // cube de glace, comme son sprite
   const o = [],
     br = Math.sin(t / 760) * 0.012,
-    bl = blinkK(t + 1000),
-    sh = 0.5 + Math.sin(t / 900) * 0.5;
+    bl = blinkK(t + 1000);
   const IC = '#8ccbea',
-    ID = '#62a8d4';
-  o.push(MP([0, 0.12, 0], [0.36, 0.05, 0.32], '#5a98c0', { ao: 1 }));
-  o.push(MP([0, 0.55 + br, 0], [0.48, 0.44 + br, 0.42], IC, { g: 0.7 }));
-  o.push(MP([0, 0.48 + br, 0.2], [0.36, 0.3, 0.22], '#a8dcf2', { g: 0.3 }));
-  o.push(MP([0, 0.93 + br, 0], [0.36, 0.07, 0.32], '#f4fbff', { g: 0.8 }));
-  o.push(MP([-0.26, 0.82 + br, 0.25], [0.12, 0.07, 0.05], '#ffffff', { g: 1, e: 1 }));
-  o.push(MP([0.3, 0.2, 0.28], [0.1, 0.03, 0.05], '#ffffff', { g: 1 }));
-  for (const [x, y, z, r] of [
-    [-0.46, 0.9, 0.05, 0.07],
-    [0.48, 0.35, 0.1, 0.06],
-    [0.4, 0.98, -0.1, 0.06]
+    ID = '#5f9fca',
+    IL = '#c8ecfb';
+  o.push(MP([0, 0.06, 0], [0.4, 0.04, 0.36], '#5a98c0', { ao: 1 }));
+  for (const s of [-1, 1]) o.push(MP([s * 0.2, 0.07, 0.08], [0.12, 0.07, 0.14], ID, { ao: 1 }));
+  o.push(MP([0, 0.52 + br, 0], [0.4, 0.4, 0.36], IC, { box: 1, g: 0.8 }));
+  o.push(MP([0, 0.94 + br, 0], [0.42, 0.045, 0.38], '#f4fbff', { box: 1, g: 0.5 }));
+  o.push(MP([0.12, 0.99 + br, 0.05], [0.16, 0.04, 0.14], '#ffffff'));
+  o.push(MP([-0.24, 0.72 + br, 0.365], [0.05, 0.14, 0.01], '#ffffff', { box: 1, e: 1, rot: [0, 0, 0.5] }));
+  o.push(MP([-0.12, 0.79 + br, 0.365], [0.025, 0.08, 0.01], IL, { box: 1, e: 1, rot: [0, 0, 0.5] }));
+  for (const [x, z, h] of [
+    [-0.32, 0.3, 0.1],
+    [0.05, 0.33, 0.07],
+    [0.3, 0.3, 0.09]
   ])
-    o.push(MP([x, y + br, z], [r, r * 1.8, r], '#d6f2ff', { rot: [0, 0, x > 0 ? -0.5 : 0.5], g: 0.8 }));
-  for (const s of [-1, 1]) {
-    mdEye(o, s * 0.15, 0.6 + br, 0.4, 0.05, bl);
-    mdCheek(o, s * 0.3, 0.5 + br, 0.37, '#ff9ab0');
+    o.push(MP([x, 0.12 + br + h * 0.4, z], [0.035, h, 0.035], IL, { g: 0.8 }));
+  for (let i = 0; i < 3; i++) {
+    const a = t / 900 + i * 2.1;
+    o.push(
+      MP(
+        [Math.cos(a) * 0.55, 0.6 + Math.sin(t / 500 + i) * 0.15, Math.sin(a) * 0.3],
+        [0.04, 0.04, 0.04],
+        '#ffffff',
+        {
+          e: 1
+        }
+      )
+    );
   }
-  o.push(MP([0, 0.5 + br, 0.43], [0.06, 0.016, 0.02], '#3a5a7a'));
+  for (const s of [-1, 1]) {
+    mdEye(o, s * 0.14, 0.6 + br, 0.37, 0.05, bl);
+    mdCheek(o, s * 0.27, 0.5 + br, 0.365, '#ff9ab0');
+  }
+  o.push(MP([0, 0.49 + br, 0.37], [0.06, 0.016, 0.02], '#3a5a7a'));
   return o;
 };
 // Cristalor — gemme
 MD[29] = t => {
+  // gemme taillée : corps à facettes (un pavé de face, un pavé tourné de 45°), pointe en haut
   const o = [],
     br = Math.sin(t / 720) * 0.01,
     bl = blinkK(t + 1800),
     gl = Math.sin(t / 500) * 0.5 + 0.5;
   const PU = '#8a58d8',
     PD = '#6a3cb4',
-    PL = '#b890f0';
-  for (const s of [-1, 1]) o.push(MP([s * 0.17, 0.075, 0.1], [0.12, 0.075, 0.14], PD, { ao: 1 }));
-  o.push(MP([0, 0.28, 0], [0.3, 0.2, 0.27], PD, { g: 0.5 }));
-  o.push(MP([0, 0.6 + br, 0], [0.42, 0.4 + br, 0.37], PU, { g: 0.8 }));
-  o.push(MP([-0.22, 0.62 + br, 0.2], [0.1, 0.26, 0.1], PL, { g: 1, rot: [0, 0, 0.1] }));
-  o.push(MP([0, 0.98 + br, 0], [0.36, 0.13, 0.32], '#ece2ff', { g: 1 }));
-  o.push(MP([0, 1.08 + br, 0], [0.24, 0.07, 0.2], '#f8f2ff', { g: 1 }));
-  o.push(MP([0.1, 1.15 + br, 0.05], [0.06, 0.04, 0.05], '#fff', { e: 1 }));
+    PL = '#b890f0',
+    PW = '#e6dcff',
+    Q = Math.PI / 4;
+  o.push(MP([0, 0.06, 0], [0.3, 0.035, 0.26], '#4a2a8a', { ao: 1 }));
+  for (const s of [-1, 1]) o.push(MP([s * 0.14, 0.08, 0.1], [0.1, 0.075, 0.12], PD, { ao: 1 }));
+  // le bas s'affine
+  o.push(MP([0, 0.22, 0], [0.22, 0.1, 0.2], PD, { box: 1 }));
+  o.push(MP([0, 0.22, 0], [0.19, 0.1, 0.19], PD, { box: 1, rot: [0, Q, 0] }));
+  o.push(MP([0, 0.58 + br, 0], [0.32, 0.28, 0.27], PU, { box: 1, g: 0.9 }));
+  o.push(MP([0, 0.58 + br, 0], [0.26, 0.28, 0.26], PL, { box: 1, g: 0.9, rot: [0, Q, 0] }));
+  // pointe : étages de plus en plus petits et clairs
+  [
+    [0.91, 0.27, 0.07, PL],
+    [1.03, 0.2, 0.07, '#c9b0f6'],
+    [1.14, 0.13, 0.06, '#dccafa'],
+    [1.23, 0.06, 0.05, PW]
+  ].forEach(([y, r, h, c], k) =>
+    o.push(MP([0, y + br, 0], [r, h, r * 0.9], c, { box: 1, g: 1, rot: [0, k % 2 ? Q : 0, 0] }))
+  );
+  o.push(MP([-0.21, 0.66 + br, 0.28], [0.03, 0.13, 0.01], '#ffffff', { box: 1, e: 1, rot: [0, 0, 0.25] }));
+  o.push(MP([0.1 + gl * 0.02, 1.16 + br, 0.04], [0.04, 0.03, 0.035], '#fff', { e: 1 }));
   for (const s of [-1, 1]) {
-    mdEye(o, s * 0.15, 0.62 + br, 0.34, 0.05, bl);
-    mdCheek(o, s * 0.28, 0.5 + br, 0.31);
+    mdEye(o, s * 0.16, 0.64 + br, 0.28, 0.048, bl);
+    mdCheek(o, s * 0.25, 0.54 + br, 0.28);
   }
-  o.push(MP([0, 0.5 + br, 0.365], [0.05, 0.015, 0.02], '#3a1a6a'));
-  o.push(MP([-0.3 + gl * 0.02, 0.9 + br, 0.2], [0.03, 0.03, 0.02], '#fff', { e: 1 }));
+  o.push(MP([0, 0.52 + br, 0.375], [0.045, 0.014, 0.02], '#3a1a6a'));
   return o;
 };
 // Foudrion — éclair
@@ -2432,20 +2496,81 @@ MD[48] = t => {
   o.push(MP([0, 0.5, 0.0], [0.14, 0.14, 0.14], '#fff0f6', { g: 1, e: 0 }));
   return o;
 };
-MD[49] = t => mdOrb(t, { ph: 1, c: '#2e2060', rim: '#c8b8f0', patch: '#ffe8f4', hi: '#8a78d8' });
-MD[50] = t =>
-  mdOrb(t, {
-    ph: 2,
-    c: '#4a78e8',
-    rim: '#8a98c8',
-    patch: '#fff',
-    hi: '#a8c4ff',
-    sp: [
-      [0.3, 0.25, 0.3],
-      [-0.32, 0.0, 0.3],
-      [0.2, -0.3, 0.3]
-    ]
-  });
+MD[49] = t => {
+  // sphère étoilée, avec un anneau incliné et une petite lune en orbite
+  const o = mdOrb(t, { ph: 1, c: '#2e2060', rim: '#c8b8f0', patch: '#ffe8f4', hi: '#8a78d8' }),
+    cy = 0.72 + Math.sin(t / 900) * 0.03,
+    sp = t / 1600,
+    ma = t / 1100;
+  for (let i = 0; i < 22; i++) {
+    const a = (i / 22) * Math.PI * 2 + sp,
+      z = Math.sin(a) * 0.66;
+    o.push(
+      MP([Math.cos(a) * 0.66, cy + z * 0.28, z * 0.5], [0.04, 0.025, 0.04], i % 3 ? '#c8b8f0' : '#ffe8f4', {
+        e: 1
+      })
+    );
+  }
+  o.push(
+    MP(
+      [Math.cos(ma) * 0.6, cy + 0.4 + Math.sin(ma) * 0.06, Math.sin(ma) * 0.3],
+      [0.08, 0.08, 0.08],
+      '#e8e0ff',
+      { g: 0.6 }
+    )
+  );
+  return o;
+};
+MD[50] = t => {
+  // l'étoile du soir : une étoile à cinq branches entourée d'un halo
+  const o = [],
+    bob = Math.sin(t / 650) * 0.04,
+    bl = blinkK(t + 300),
+    cy = 0.74 + bob;
+  const BL = '#4a78e8',
+    BP = '#8fb0ff',
+    CR = '#f4f8ff';
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2 + t / 4300;
+    o.push(
+      MP(
+        [Math.cos(a) * 0.62, cy + Math.sin(a) * 0.62, -0.12],
+        [0.03, 0.03, 0.02],
+        i % 2 ? '#ffffff' : '#bfd4ff',
+        { e: 1 }
+      )
+    );
+  }
+  for (let k = 0; k < 5; k++) {
+    const th = (k * Math.PI * 2) / 5 + Math.sin(t / 1400) * 0.08,
+      lf = 1 + Math.sin(t / 480 + k) * 0.05,
+      d = 0.24 + 0.17 * lf;
+    o.push(
+      MP([Math.sin(th) * d, cy + Math.cos(th) * d * 0.92, 0], [0.16, 0.54 * lf, 0.11], k % 2 ? BP : BL, {
+        rot: [0, 0, -th],
+        g: 0.6
+      })
+    );
+    o.push(
+      MP(
+        [Math.sin(th) * (d + 0.26), cy + Math.cos(th) * (d + 0.26) * 0.92, 0.02],
+        [0.05, 0.05, 0.05],
+        '#ffffff',
+        { e: 1 }
+      )
+    );
+  }
+  o.push(MP([0, cy, 0], [0.36, 0.36, 0.18], BL, { g: 0.5 }));
+  o.push(MP([0, cy, 0.12], [0.27, 0.27, 0.11], CR, { g: 0.5 }));
+  for (const s of [-1, 1]) {
+    mdEye(o, s * 0.09, cy + 0.04, 0.215, 0.04, bl, '#1a2a6a');
+    mdCheek(o, s * 0.17, cy - 0.05, 0.2, '#ffb0d0');
+  }
+  o.push(MP([0, cy - 0.07, 0.225], [0.05, 0.016, 0.02], '#4a3a8a'));
+  o.push(MP([0, 0.1, 0], [0.22, 0.03, 0.18], '#2a3a7a', { ao: 1 }));
+  return o;
+};
+
 MD[51] = t =>
   mdCrt(t, {
     ph: 4,
