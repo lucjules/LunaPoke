@@ -261,9 +261,13 @@ test('une sauvegarde abîmée n’empêche pas le démarrage', async ({ page }) 
 });
 
 test('application installable : service worker et jeu hors ligne', async ({ page, context }) => {
+  // un autre site de la même adresse (les cours) a son propre cache : le jeu ne doit pas l'effacer
+  await page.goto('/manifest.webmanifest');
+  await page.evaluate(() => caches.open('mes-cours-test').then(c => c.put('/x', new Response('x'))));
   await page.goto('/index.html');
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.waitForTimeout(500);
+  expect(await page.evaluate(() => caches.keys())).toContain('mes-cours-test');
   await context.setOffline(true);
   await page.reload();
   expect(await page.evaluate(() => SP.length)).toBe(100);
