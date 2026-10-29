@@ -443,17 +443,6 @@
 }
 #slots .sl {
   padding: 4px 8px 4px 26px !important;
-  gap: 8px;
-}
-#slots .sl .ss img {
-  width: 24px;
-  height: 24px;
-}
-#slots .sl .sn {
-  width: 20px;
-  height: 20px;
-  line-height: 16px;
-  font-size: 11px;
 }
 #slots .sl .st {
   font-size: 14px;

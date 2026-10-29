@@ -11,9 +11,6 @@ html {
 }
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: system-ui, sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -29,60 +26,36 @@ canvas {
   background: #000;
 }
 #dlg {
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  bottom: 6px;
   background: #fffbe8;
   color: #222;
   border: 3px solid #333;
   border-radius: 8px;
-  padding: 10px;
   display: none;
-  font-size: 15px;
-  min-height: 44px;
   cursor: pointer;
 }
 #ch {
-  position: absolute;
-  right: 8px;
-  top: 8px;
   display: none;
   flex-direction: column;
-  gap: 6px;
-  z-index: 5;
 }
 #pn {
-  position: absolute;
-  inset: 0;
   background: #fffbe8;
   color: #222;
   display: none;
   overflow: auto;
-  padding: 10px;
   box-sizing: border-box;
-  z-index: 6;
-  font-size: 14px;
 }
 button {
   font: inherit;
   padding: 8px 12px;
   border-radius: 8px;
-  border: 2px solid #333;
-  background: #fffbe8;
   color: #222;
 }
 button:disabled {
   opacity: 0.4;
 }
 #bt {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(#9ad1f5, #cfe8a8 60%, #8bb35a);
-  display: none;
   flex-direction: column;
   justify-content: space-between;
-  padding: 8px;
   color: #222;
   box-sizing: border-box;
 }
@@ -95,7 +68,6 @@ button:disabled {
   font-size: 14px;
 }
 .bar {
-  height: 8px;
   background: #ccc;
   border-radius: 4px;
   overflow: hidden;
@@ -121,25 +93,12 @@ button:disabled {
   background: #fffbe8;
   border: 2px solid #333;
   border-radius: 8px;
-  padding: 8px;
   min-height: 20px;
-  font-size: 14px;
 }
 #mn {
-  display: flex;
-  gap: 6px;
   flex-wrap: wrap;
-  min-height: 40px;
-}
-#pad {
-  display: grid;
-  grid-template-columns: repeat(3, 56px);
-  gap: 6px;
-  margin: 10px;
 }
 #pad button {
-  height: 48px;
-  font-size: 20px;
   touch-action: none;
   user-select: none;
 }
@@ -148,16 +107,10 @@ small {
   margin-bottom: 12px;
 }
 body {
-  background: radial-gradient(circle at 50% 0, #2d4a35, #0f1a13 70%) fixed;
   min-height: 100vh;
 }
 #w {
-  border-radius: 16px;
   overflow: hidden;
-  box-shadow:
-    0 8px 30px #000a,
-    0 0 0 4px #e9d9a6;
-  margin-top: 10px;
 }
 button {
   background: linear-gradient(#fffdf2, #f1e6bd);
@@ -172,8 +125,6 @@ button:active {
 }
 #pad button {
   border-radius: 50%;
-  width: 56px;
-  height: 56px;
   color: #5b4a2a;
 }
 .inf,
@@ -204,29 +155,11 @@ button:active {
   animation: shake 0.3s;
 }
 #ti {
-  position: absolute;
   inset: 0;
-  z-index: 9;
-  background: radial-gradient(circle at 50% 30%, #2b4a82, #0b1020 75%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  color: #ffe9a8;
-  gap: 8px;
   text-align: center;
-}
-#ti h1 {
-  margin: 0;
-  font-size: 44px;
-  letter-spacing: 4px;
-  text-shadow:
-    0 0 18px #ffe9a8aa,
-    0 3px 0 #7a5a1a;
-}
-#ti p {
-  margin: 0 0 10px;
-  opacity: 0.85;
 }
 #ti .m {
   font-size: 60px;
@@ -274,48 +207,18 @@ button {
 #pad {
   grid-template-columns: repeat(3, 64px);
   gap: 8px;
-  margin: 6px 0;
 }
 #pad button {
-  width: 64px;
-  height: 64px;
   font-size: 24px;
 }
 #act {
-  display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-#act button {
-  min-width: 130px;
-}
-#dlg {
-  position: fixed;
-  left: 8px;
-  right: 8px;
-  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  max-width: 544px;
-  margin: 0 auto;
-  font-size: 17px;
-  min-height: 56px;
-  z-index: 22;
 }
 #pn {
-  position: fixed;
   inset: 0;
-  max-width: 560px;
-  margin: 0 auto;
-  z-index: 25;
-  padding: 16px;
-  font-size: 16px;
 }
 #bt {
-  position: fixed;
   inset: 0;
-  max-width: 560px;
-  margin: 0 auto;
-  z-index: 20;
-  padding: 12px;
   padding-top: calc(12px + env(safe-area-inset-top, 0px));
   padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
 }
@@ -324,7 +227,6 @@ button {
   font-size: 16px;
 }
 #mn button {
-  flex: 1 1 44%;
   min-height: 50px;
 }
 #sp svg:first-child {
@@ -335,22 +237,8 @@ button {
   width: min(125px, 32vw);
   height: auto;
 }
-#ch {
-  position: fixed;
-  left: 50%;
-  top: 42%;
-  right: auto;
-  transform: translate(-50%, -50%);
-  z-index: 30;
-  gap: 10px;
-}
 #ch button {
-  min-width: 230px;
   min-height: 52px;
-}
-#ti {
-  position: fixed;
-  z-index: 40;
 }
 @media (max-width: 600px) {
   #w {
@@ -369,24 +257,14 @@ body > small {
 }
 .toast {
   position: fixed;
-  top: calc(10px + env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translateX(-50%);
-  max-width: 90vw;
   background: #ffe9a8;
   color: #222;
-  padding: 9px 15px;
   border-radius: 18px;
   border: 2px solid #5b4a2a;
   z-index: 60;
-  font: 600 14px system-ui;
-  text-align: center;
   box-shadow: 0 4px 12px #0006;
-}
-.toast.tip {
-  background: #dff1ff;
-  top: auto;
-  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
 }
 @media (orientation: landscape) and (max-height: 520px) {
   body {
@@ -417,11 +295,8 @@ body > small {
   --s: 200px;
   display: block;
   position: relative;
-  width: var(--s);
-  height: var(--s);
   border-radius: 50%;
   background: #262626;
-  margin: 6px;
   box-shadow: 0 0 0 3px #0006;
 }
 #pad .dp,
@@ -434,13 +309,7 @@ body > small {
   min-height: 0;
   background: #999;
 }
-#pad .dp {
-  width: 31%;
-  height: 31%;
-}
 #pad .dd {
-  width: 10%;
-  height: 10%;
   background: #444;
 }
 #pad .dp:active,
@@ -490,31 +359,16 @@ body > small {
   transform: translate(-70%, -50%) rotate(-135deg);
 }
 #act {
-  display: flex;
   flex-wrap: wrap;
-  width: 170px;
   justify-content: center;
   align-items: center;
-  gap: 12px;
 }
 #act button {
-  width: 64px;
-  height: 64px;
-  min-width: 0;
-  min-height: 0;
   border-radius: 50%;
   background: #999;
   color: #262626;
-  border: 0;
   box-shadow: 0 0 0 3px #26262688;
-  font-size: 24px;
   font-weight: 700;
-  padding: 0;
-}
-#act button.big {
-  width: 92px;
-  height: 92px;
-  font-size: 26px;
 }
 #act button:active {
   background: #c4c4c4;
@@ -596,11 +450,6 @@ canvas {
 #pad .dd.on {
   background: #8a8a8a;
 }
-#act {
-  flex: none;
-  width: calc(var(--S) * 0.85);
-  gap: calc(var(--S) * 0.06);
-}
 #act button {
   flex: none;
   width: calc(var(--S) * 0.32);
@@ -632,14 +481,7 @@ canvas {
   }
 }
 #slots .sl {
-  min-width: 104px;
-  padding: 8px;
-  font-size: 13px;
-  line-height: 1.35;
   min-height: 0;
-}
-#slots .sl.on {
-  outline: 3px solid #ffe9a8;
 }
 .evo svg {
   animation: evo 1.4s ease-in-out;

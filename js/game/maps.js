@@ -1,4 +1,39 @@
 // Construction des cartes : villes, routes, intérieurs, objets cachés
+// Numéros des cartes (index dans maps[]). Les cartes sont ajoutées dans cet ordre au fil
+// des fichiers : maps.js (0 à 30), menus.js (31 = SEC), act3.js (32 = A3), act4.js (39 = A4),
+// act5.js (49 = A5). Le code les désigne souvent par leur numéro : cette table sert de repère.
+//   0 Brumeval                              1 Route 1
+//   2 Cendrebourg                           3 Route 2
+//   4 Lunargent                             5 Forêt d'Argent
+//   6 Maison (intérieur)                    7 Centre de soins (intérieur)
+//   8 Laboratoire du Prof. Sauge (intérieur) 9 Arène (intérieur)
+//  10 Maison du grand-père (intérieur)     11 Maison de Léa (intérieur)
+//  12 Maison du collectionneur (intérieur) 13 Grotte Lunaire (intérieur)
+//  14 Route 3                              15 Pierrefeu
+//  16 Route 4                              17 Havre-d'Opale
+//  18 Mont Croissant                       19 Chalet de Roc (intérieur)
+//  20 Maison du port (intérieur)           21 Plateau de la Ligue
+//  22 Palais de combat (intérieur)         23 Sentier des Brumes
+//  24 Ardenfeu                             25 Route des Cendres
+//  26 Cristalbourg                         27 Gorge du Givre
+//  28 Citadelle d'Éclipse                  29 Forge du village (intérieur)
+//  30 Maison de cristal (intérieur)        31 Clairière Cachée (intérieur)
+//  32 Chemin de l'Aube                     33 Soleilmer
+//  34 Récifs d'Opale                       35 Aubecime
+//  36 Sanctuaire solaire                   37 Maison des marées (intérieur)
+//  38 Maison de l'aube (intérieur)         39 Plage des Marées
+//  40 Port-Écume                           41 Archipel de Corail
+//  42 Îlot des Vents                       43 Marais des Murmures
+//  44 Brumevert                            45 Voie des Étoiles
+//  46 Cabane du phare (intérieur)          47 Maison des vents (intérieur)
+//  48 Hutte des brumes (intérieur)         49 Sentier des Terrasses
+//  50 Hautes-Terrasses                     51 Berges du Miroir
+//  52 Lac-Miroir                           53 Gorges Rouges
+//  54 Forgeval                             55 Col Blanc
+//  56 Cimeneige                            57 Dunes d'Or
+//  58 Sablerune                            59 Bois Hurlants
+//  60 Sylvéclat                            61 Falaises du Large
+//  62 Havre-Citadelle                      63 Sommet des Légendes
 // ---------- Cartes ----------
 function mk(w, h, f) {
   const a = [];

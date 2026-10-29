@@ -168,8 +168,6 @@ body.px canvas {
   line-height: 1.5;
 }
 #pn h4 {
-  font-size: 11px;
-  margin: 14px 0 6px;
   line-height: 1.5;
 }
 #pn p {
@@ -195,41 +193,30 @@ body.px canvas {
   background: var(--paper);
   color: var(--ink);
   z-index: 40;
-  gap: 10px;
 }
 #ti h1 {
-  font-size: 30px;
   letter-spacing: 2px;
   text-shadow: 3px 3px 0 #b8b8a8;
   color: var(--ink);
-  margin: 6px 0;
 }
 #ti p {
   opacity: 1;
   color: #444;
-  font-size: 15px;
 }
 #tmo {
   display: flex;
   gap: 6px;
   align-items: flex-end;
   justify-content: center;
-  min-height: 72px;
 }
 #slots {
   flex-direction: column !important;
   align-items: stretch !important;
-  width: min(86%, 340px);
-  margin: 6px auto !important;
 }
 #slots .sl {
-  min-width: 0;
-  text-align: left;
-  font-size: 15px;
   border: 3px solid var(--ink);
   border-radius: 4px;
   background: #fff;
-  padding: 8px 8px 8px 26px;
 }
 #slots .sl.on {
   outline: 0;
@@ -239,8 +226,6 @@ body.px canvas {
   border: 3px solid var(--ink);
   border-radius: 4px;
   background: #fff;
-  padding: 8px 18px 8px 26px;
-  font-size: 16px;
 }
 #bt {
   position: fixed;
@@ -253,7 +238,6 @@ body.px canvas {
   max-width: none;
   margin: 0;
   padding: 0;
-  background: var(--paper) !important;
   display: none;
   overflow: hidden;
   z-index: 20;
@@ -263,7 +247,6 @@ body.px canvas {
   width: 54%;
   padding: 8px 12px 9px;
   font-size: 15px;
-  line-height: 1.25;
 }
 #fi {
   left: 8px;
@@ -308,7 +291,6 @@ body.px canvas {
 #bt .hpn {
   text-align: right;
   font-size: 13px;
-  margin-top: 2px;
 }
 #sp {
   display: contents;
@@ -333,10 +315,7 @@ body.px canvas {
   position: absolute;
   left: -10%;
   right: -10%;
-  bottom: -4px;
-  height: 14px;
   border-radius: 50%;
-  background: #c8c8bc;
   z-index: 0;
 }
 #sp img,
@@ -531,7 +510,6 @@ body.q0 #sp img {
 }
 .toast {
   top: calc(var(--oy) + 8px);
-  max-width: calc(var(--dw) - 24px);
   font-size: 13px;
   padding: 8px 14px;
   line-height: 1.3;
@@ -586,8 +564,6 @@ body.q0 #sp img {
 }
 
 #ti {
-  overflow-y: auto;
-  justify-content: safe center;
   padding: 6px 0;
   gap: 6px;
 }
@@ -599,25 +575,11 @@ body.q0 #sp img {
   width: 44px !important;
   height: 44px !important;
 }
-#ti h1 {
-  font-size: 26px;
-  margin: 2px 0;
-}
-#ti p {
-  margin: 0 0 4px;
-  font-size: 13px;
-}
-#slots {
-  margin: 2px auto !important;
-  gap: 6px !important;
-}
 #slots .sl {
   font-size: 13px;
   line-height: 1.3;
-  padding: 5px 8px 5px 26px;
 }
 #ti #go {
-  padding: 6px 16px 6px 26px;
   font-size: 15px;
   flex: none;
 }
@@ -713,10 +675,8 @@ body.q0 #sp img {
 }
 .tc {
   border: 3px solid var(--ink, #333);
-  padding: 8px 10px;
   margin: 6px 0 8px;
   background: rgba(255, 255, 255, 0.55);
-  line-height: 1.5;
 }
 .tc b {
   font-size: 1.15em;
@@ -733,13 +693,9 @@ body.q0 #sp img {
 }
 .bdg {
   display: flex;
-  gap: 4px;
-  margin: 5px 0;
-  flex-wrap: wrap;
 }
 .bdg i {
   width: 15px;
-  height: 15px;
   border: 2px solid #333;
   border-radius: 50%;
   background: #d8d8d8;
