@@ -291,8 +291,21 @@ function demoCap() {
   );
 }
 NP.push({ m: 0, e: '🧓', x: 26, y: 14, f: demoCap, l: ['Vieil homme : Bonjour !'] });
+// « Nouvelle partie » efface le fichier en cours : il faut cliquer deux fois (3 s pour confirmer)
 $('rs').onclick = e => {
   e.preventDefault();
+  const a = $('rs');
+  if (!a.dataset.c) {
+    a.dataset.c = 1;
+    a.textContent = 'Confirmer : effacer la partie ?';
+    setTimeout(() => {
+      delete a.dataset.c;
+      a.textContent = 'Nouvelle partie';
+    }, 3000);
+    return;
+  }
+  delete a.dataset.c;
+  a.textContent = 'Nouvelle partie';
   G = newG();
   freshWorld();
   save();

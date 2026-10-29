@@ -143,3 +143,6 @@ $('go').onclick = () => {
   const mist = wild.find(m => m.th == 'mist');
   if (mist && !found(82)) mist.e.s.push(82);
 })();
+// application installable : le service worker met le jeu en cache (hors ligne)
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol))
+  navigator.serviceWorker.register('sw.js').catch(() => {});
