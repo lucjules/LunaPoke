@@ -1,6 +1,6 @@
-# Tests à chaque envoi de code ; publication sur GitHub Pages depuis la branche principale,
-# seulement si les tests passent et si le dépôt est public (sinon l'étape est sautée).
-name: Tests et publication
+# Tests à chaque envoi de code. Le site est publié par GitHub Pages directement depuis
+# la branche main (Settings → Pages → Deploy from a branch → main, dossier / (root)).
+name: Tests
 
 on:
   push:
@@ -37,30 +37,3 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  publication:
-    name: Publication sur GitHub Pages
-    needs: tests
-    if: >-
-      github.event_name != 'pull_request' &&
-      github.ref_name == github.event.repository.default_branch &&
-      !github.event.repository.private
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deploiement.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Fichiers du site (sans les outils de développement)
-        run: |
-          mkdir _site
-          cp -r index.html sw.js manifest.webmanifest css js fonts icons _site/
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-      - id: deploiement
-        uses: actions/deploy-pages@v4
