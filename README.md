@@ -4,6 +4,9 @@ Jeu d'aventure et de capture de créatures au style rétro (console portable), �
 
 ## Lancer le jeu
 
+En ligne (une fois le dépôt public et GitHub Pages activé) : https://lucjules.github.io/LunaPoke/ — sur téléphone, le menu du navigateur propose « Ajouter à l'écran d'accueil » pour l'installer comme une application, qui marche ensuite hors ligne.
+
+En local : 
 Ouvrir `index.html` dans un navigateur (ordinateur ou mobile). Tout est inclus, polices comprises (dossier `fonts/`) : le jeu fonctionne aussi hors ligne.
 
 ## Contrôles
@@ -73,3 +76,10 @@ Le code est mis en forme avec [Prettier](https://prettier.io) (réglages dans `.
 La table des numéros de cartes (`maps[0]` = Brumeval, etc.) se trouve en tête de `js/game/maps.js`.
 
 Pour tester en local, ouvrir `index.html` directement ou lancer un petit serveur : `python3 -m http.server` puis aller sur http://localhost:8000.
+
+## Tests et publication
+
+- `npm install` puis `npm test` : tests de bout en bout avec Playwright (lancement, nouvelle partie, combats simples et doubles, effets de chaque attaque, menus, les 64 cartes en 2D et en 3D, toutes les créatures, sauvegardes, mode hors ligne).
+- `npm run check` / `npm run format` : vérifie / applique la mise en forme Prettier.
+- GitHub Actions (`.github/workflows/ci.yml`) lance ces vérifications à chaque envoi. Sur la branche principale, si elles passent et que le dépôt est public, le site est publié sur GitHub Pages (réglage à faire une fois : Settings → Pages → Source : « GitHub Actions »).
+- Si un fichier est ajouté au jeu, l'ajouter aussi à la liste `FILES` de `sw.js` (un test le vérifie).
