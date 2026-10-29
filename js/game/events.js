@@ -275,7 +275,7 @@ function lab() {
         say(
           [
             `Tu as choisi ${SP[i].n} !`,
-            'Prof. Sauge : Prends aussi 5 Capsules et 3 Potions.',
+            'Prof. Sauge : Prends aussi 8 Capsules et 4 Potions.',
             'Prof. Sauge : Voici mon Bestiaire : il enregistre chaque Lunaire que tu croises. À toi de le compléter !'
           ],
           () =>

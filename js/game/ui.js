@@ -345,7 +345,7 @@ function settings() {
       L('Astuces du tutoriel', cb('tips')) +
       `<h4>⚡ Performances</h4><div id="pi">Test : score ${bc.n} · ${bc.cores} cœurs · ${bc.coarse ? 'tactile' : 'ordinateur'} · ${perf.fps || 0} FPS · qualité ${Q.n}${S.q ? '' : ' (auto)'}</div><div><button id="bq">Relancer le test de performance</button></div><h4>📊 Statistiques</h4><div class="stg"><span>⏱ Temps</span><b>${fmt(G.sx.time)}</b><span>👣 Pas</span><b>${G.sx.steps}</b><span>⚔ Victoires</span><b>${G.sx.wins}/${G.sx.battles}</b><span>🎯 Captures</span><b>${G.sx.caught}</b><span>📖 Bestiaire</span><b>${G.dex.s.length}/${SP.length} vus</b><span>🏅 Badges</span><b>${G.badge}/19</b></div>
  <h4>💾 Sauvegarde</h4><textarea id="sv" rows="3" style="width:100%"></textarea><div><button id="cp">Exporter</button> <button id="im">Importer</button> <button id="rz">Nouvelle partie</button> <button id="ts">Changer de fichier</button> <button id="tt">Revoir les astuces</button></div><small id="sm"></small>
- <h4>🕹 Commandes</h4><small>Croix / flèches / WASD · A = Z ou Espace · B = X ou Échap (maintenu : courir) · START = Entrée ou M · SELECT = P · raccourcis E équipe, V sac, Q quêtes, G bestiaire</small>`
+ <h4>🕹 Commandes</h4><small>Croix / flèches / WASD · A = Z ou Espace · B = X ou Échap (maintenu : courir) · START = Entrée ou M · SELECT = P · raccourcis E équipe, Q quêtes, V bestiaire, H histoire, G chemin, T vue 3D</small>`
   );
   document.querySelectorAll('#pn [data-k]').forEach(
     el =>
@@ -376,21 +376,11 @@ function settings() {
   $('im').onclick = () => {
     try {
       const d = JSON.parse($('sv').value);
-      if (!d.party || d.map == null) throw 0;
-      G = d;
-      G.inv = G.inv || {};
-      G.dex = G.dex || { s: [], c: [] };
-      G.tr = G.tr || {};
-      G.q = G.q || {};
-      G.sp = G.sp || 0;
-      G.vis = G.vis || [0];
-      G.sx = G.sx || { steps: 0, battles: 0, wins: 0, caught: 0, time: 0 };
-      G.gold = G.gold ?? 100;
-      G.lg = G.lg || 0;
-      G.box = G.box || [];
-      G.ach = G.ach || [];
-      G.tips = G.tips || [];
-      G.rec = G.rec || 0;
+      if (!d || !Array.isArray(d.party) || !maps[d.map]) throw 0;
+      G = fixSave(d);
+      rx = G.x;
+      ry = G.y;
+      for (const k in MC) delete MC[k];
       save();
       $('sm').textContent = 'Sauvegarde importée !';
     } catch (e) {
@@ -459,7 +449,11 @@ const ACH = [
   ['Premier pas', 'Choisir ton premier partenaire', () => G.f.s],
   ['Dresseur', 'Gagner 10 combats', () => G.sx.wins >= 10],
   ['Collectionneur', 'Capturer 10 espèces', () => G.dex.c.length >= 10],
-  ['Maître capteur', 'Capturer toutes les espèces', () => G.dex.c.length >= SP.length - 1],
+  [
+    'Maître capteur',
+    'Capturer toutes les espèces (sauf les 2 autres starters et leurs évolutions)',
+    () => G.dex.c.length >= SP.length - 4
+  ],
   ['Encyclopédie', 'Voir toutes les espèces', () => G.dex.s.length >= SP.length],
   ['Champion', 'Obtenir les 4 badges', () => G.badge >= 4],
   ['Sauveur de la lune', "Terminer l'histoire", () => G.f.e],
@@ -479,7 +473,7 @@ const ACH = [
   [
     'Évolution',
     'Faire évoluer une créature',
-    () => G.party.some(c => [9, 10, 11, 12, 17, 18, 19].includes(c.s))
+    () => G.party.concat(G.box).some(c => SP.some(s => (s.ev && s.ev[1] == c.s) || (s.se && s.se[1] == c.s)))
   ],
   ['Légendaire', 'Capturer Luniel', () => G.q.lun],
   ['Série de 10', '10 victoires de suite au Palais', () => G.rec >= 10],
@@ -513,8 +507,9 @@ const ACH = [
     () => Object.keys(G.q).filter(k => k[0] == 'b' && k[1] != 'a' && /^b\d/.test(k)).length >= 10
   ]
 ];
+// vérification des succès (en pause sur l'écran titre et quand l'onglet est caché)
 setInterval(() => {
-  if ($('ti').style.display != 'none') return;
+  if ($('ti').style.display != 'none' || document.hidden) return;
   for (let i = 0; i < ACH.length; i++)
     if (!G.ach.includes(i) && ACH[i][2]()) {
       G.ach.push(i);
@@ -708,24 +703,7 @@ function palace() {
     }
   );
 }
-function initG(g) {
-  g.dex = g.dex || { s: [], c: [] };
-  g.tr = g.tr || {};
-  g.gold = g.gold ?? 100;
-  g.lg = g.lg || 0;
-  g.box = g.box || [];
-  g.ach = g.ach || [];
-  g.tips = g.tips || [];
-  g.rec = g.rec || 0;
-  g.inv = g.inv || {};
-  g.q = g.q || {};
-  g.sp = g.sp || 0;
-  g.vis = g.vis || [0];
-  g.sx = g.sx || { steps: 0, battles: 0, wins: 0, caught: 0, time: 0 };
-  g.f = g.f || { s: 0, r: 0 };
-  g.party.forEach(c => mark(c.s, 1));
-  return g;
-}
+const initG = fixSave;
 function slotInfo(n) {
   try {
     const g = JSON.parse(localStorage.getItem(n == 1 ? 'aerelia' : 'aerelia_' + n));
@@ -759,7 +737,7 @@ function renderSlots() {
             .map(c => spr(c.s, 28))
             .join(
               ''
-            )}</span><span class="st"><b>${g.pn || 'Dresseur'}</b><small>🏅 ${g.badge || 0}/19 · Nv ${Math.max(...g.party.map(c => c.lv))} · ${(t => Math.floor(t / 3600) + 'h' + String(Math.floor(t / 60) % 60).padStart(2, '0'))((g.sx && g.sx.time) || 0)}</small></span>`
+            )}</span><span class="st"><b>${cleanName(g.pn, 10) || 'Dresseur'}</b><small>🏅 ${g.badge || 0}/19 · Nv ${Math.max(...g.party.map(c => c.lv))} · ${(t => Math.floor(t / 3600) + 'h' + String(Math.floor(t / 60) % 60).padStart(2, '0'))((g.sx && g.sx.time) || 0)}</small></span>`
         : `<span class="st"><b>Nouvelle aventure</b><small>Fichier vide</small></span>`;
       return `<div class="sr${on ? ' on' : ''}"><button class="sl" data-n="${n}"><span class="sn">${n}</span>${body}</button>${g ? `<button class="sx" data-x="${n}" aria-label="Effacer le fichier ${n}">🗑</button>` : ''}</div>`;
     })
@@ -807,6 +785,7 @@ function useSlot(n) {
   for (const k in MC) delete MC[k];
   renderSlots();
 }
+// surveille les blocages : « busy » vrai alors qu'aucun dialogue, menu ou combat n'est affiché
 setInterval(() => {
   try {
     if (!busy) {
@@ -817,15 +796,23 @@ setInterval(() => {
       ['dlg', 'pn', 'ch', 'bt', 'ti', 'cin'].some(i => {
         const e = $(i);
         return e && e.style.display && e.style.display != 'none';
-      }) || document.querySelector('body>div[style*="z-index:99"]');
+      }) ||
+      document.querySelector('body>div[style*="z-index:99"]') ||
+      // intro en 3D, cinématique ou apparition d'une créature : rien n'est affiché mais le jeu attend
+      V3.in ||
+      V3.cs ||
+      V3.enc;
     if (vis) {
       freshWorld.n = 0;
       return;
     }
     freshWorld.n = (freshWorld.n || 0) + 1;
     if (freshWorld.n >= 3) {
+      // filet de sécurité : le jeu est resté « occupé » sans rien afficher ; on le débloque
+      // et on le signale pour pouvoir corriger la cause
       freshWorld.n = 0;
       busy = false;
+      console.warn('Aérélia : blocage détecté et levé automatiquement (carte ' + G.map + ')');
     }
   } catch (e) {}
 }, 700);

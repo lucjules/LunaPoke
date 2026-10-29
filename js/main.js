@@ -26,9 +26,20 @@ function layout() {
     set('--db', H - w.bottom);
   } catch (e) {}
 }
+// recalcul quand la fenêtre, l'écran de jeu ou les contrôles changent de taille, au défilement
+// et une fois les polices chargées ; un contrôle lent reste en secours
 addEventListener('resize', layout);
 addEventListener('orientationchange', layout);
-setInterval(layout, 600);
+addEventListener('scroll', layout, { passive: true });
+if (window.ResizeObserver) {
+  const ro = new ResizeObserver(layout);
+  ['w', 'ctl'].forEach(id => ro.observe($(id)));
+  ro.observe(document.body);
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+setInterval(() => {
+  if (!document.hidden) layout();
+}, 2000);
 layout();
 (() => {
   let o = null;
@@ -116,4 +127,19 @@ $('go').onclick = () => {
     const add = [pool[(mi * 5) % pool.length], pool[(mi * 5 + 7) % pool.length]];
     m.e.s = [...new Set(m.e.s.concat(add))];
   });
+  // chaque forme de base doit être capturable quelque part : on place celles qui manquent
+  // dans la zone de plus bas niveau où elle n'a pas encore évolué (la moins peuplée d'abord)
+  const wild = maps.filter(m => m.e && !m.in && m.e.l),
+    found = s => wild.some(m => m.e.s.includes(s));
+  f1.forEach(s => {
+    if (found(s)) return;
+    const evl = ev2[s] ? ev2[s][1] : 99,
+      zone = wild
+        .filter(m => m.e.l[1] < evl)
+        .sort((a, b) => a.e.s.length - b.e.s.length || a.e.l[0] - b.e.l[0])[0];
+    if (zone) zone.e.s.push(s);
+  });
+  // Brumaillon (82) n'a pas d'évolution : il vit sur le Sentier des Brumes
+  const mist = wild.find(m => m.th == 'mist');
+  if (mist && !found(82)) mist.e.s.push(82);
 })();

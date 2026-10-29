@@ -60,23 +60,48 @@ let S = Object.assign(
     }
   })()
 );
-let G = load() || newG(),
+// version du format de sauvegarde (à augmenter si la structure de G change)
+const SAVE_VERSION = 2;
+// retire les caractères dangereux d'un nom saisi ou importé (il finit dans du HTML)
+const cleanName = (v, max = 12) =>
+  typeof v == 'string'
+    ? v
+        .replace(/[<>&"'`{}\\\/]/g, '')
+        .trim()
+        .slice(0, max)
+        .trim() || null
+    : null;
+// complète une sauvegarde (ancienne version, import, fichier abîmé) et nettoie les textes
+function fixSave(g) {
+  const d = newG();
+  for (const k in d) if (g[k] == null) g[k] = d[k];
+  for (const k of ['party', 'box', 'ach', 'tips', 'vis']) if (!Array.isArray(g[k])) g[k] = d[k];
+  for (const k of ['f', 'dex', 'tr', 'q', 'inv']) if (typeof g[k] != 'object') g[k] = d[k];
+  g.sx = Object.assign(d.sx, g.sx);
+  g.dex.s = g.dex.s || [];
+  g.dex.c = g.dex.c || [];
+  const okC = c => c && typeof c == 'object' && Number.isInteger(c.s) && c.s >= 0 && c.lv > 0;
+  g.party = g.party.filter(okC);
+  g.box = g.box.filter(okC);
+  g.party.concat(g.box).forEach(c => {
+    const n = cleanName(c.nick);
+    if (n) c.nick = n;
+    else delete c.nick;
+  });
+  g.pn = cleanName(g.pn, 10);
+  g.rv = cleanName(g.rv, 10);
+  // les créatures de l'équipe comptent comme capturées dans le bestiaire de CETTE sauvegarde
+  g.party.forEach(c => {
+    if (!g.dex.s.includes(c.s)) g.dex.s.push(c.s);
+    if (!g.dex.c.includes(c.s)) g.dex.c.push(c.s);
+  });
+  g.v = SAVE_VERSION;
+  return g;
+}
+let G = fixSave(load() || newG()),
   busy = false,
   dq = [],
   dcb = null;
-G.dex = G.dex || { s: [], c: [] };
-G.tr = G.tr || {};
-G.gold = G.gold ?? 100;
-G.lg = G.lg || 0;
-G.box = G.box || [];
-G.ach = G.ach || [];
-G.tips = G.tips || [];
-G.rec = G.rec || 0;
-G.q = G.q || {};
-G.sp = G.sp || 0;
-G.vis = G.vis || [0];
-G.sx = G.sx || { steps: 0, battles: 0, wins: 0, caught: 0, time: 0 };
-G.party.forEach(c => mark(c.s, 1));
 function save() {
   try {
     localStorage.setItem(SK(), JSON.stringify(G));

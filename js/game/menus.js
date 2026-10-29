@@ -99,7 +99,73 @@ const DESC = [
   "Oiseau d'orage de la Gorge du Givre. Il plonge dans un éclair.",
   "Chauve-souris des ténèbres, fidèle aux Disciples d'Éclipse.",
   'Un vieil arbre des bois sombres, gardien de sentiers oubliés.',
-  "Le fragment vivant de l'Éclat-mère. Sa présence éteint les étoiles."
+  "Le fragment vivant de l'Éclat-mère. Sa présence éteint les étoiles.",
+  'Un Cendrelin transformé par la Pierre Ardente. Son cratère crache des braises quand il se fâche.',
+  "Né d'une Coralie et d'une Pierre Marée, ce récif vivant abrite des poissons entre ses branches.",
+  'Une Pétale baignée de clair de lune. Elle ne fleurit vraiment que la nuit.',
+  'Un Lunard devenu chat de la nuit. Ses yeux dorés voient à travers les ténèbres.',
+  "Un petit soleil vivant du Chemin de l'Aube. Il se lève toujours avant tout le monde.",
+  'Un coquillage aux reflets nacrés. Il chante quand la marée monte.',
+  'Une gerbe de blé doré qui ondule même sans vent.',
+  'Un nuage curieux qui adore cacher les sommets.',
+  "Oiseau sacré de l'aube. Sa crête s'illumine aux premières lueurs.",
+  "Gardien doré du Sanctuaire solaire. On dit qu'il réveille le soleil chaque matin.",
+  'Un fragment de corail vivant qui roule sur les plages au gré des vagues.',
+  "Un cerf-volant vivant. Il se laisse porter par les bourrasques de l'archipel.",
+  'Un lotus qui respire la brume des marais.',
+  'Sa flamme guide les bateaux perdus dans le brouillard.',
+  'Une huître qui garde une perle de lune dans sa coquille.',
+  'Une sphère étoilée venue du ciel du soir. Ses taches dessinent des constellations.',
+  "L'étoile du soir devenue créature. Elle ne descend que pour les dresseurs les plus forts.",
+  'Une loutre joueuse qui flotte sur le dos pour casser des coquillages.',
+  'Une loutre puissante qui porte un collier de coquillages.',
+  'Une petite méduse translucide qui dérive dans les eaux calmes.',
+  "Une grande méduse ornée d'étoiles. Ses filaments brillent dans les profondeurs.",
+  'Une tortue paisible. De la mousse pousse sur sa carapace.',
+  'Un arbre a pris racine sur sa carapace. Elle se déplace très lentement.',
+  "Un poisson argenté marqué d'un croissant de lune.",
+  'Une carpe élégante qui remonte les courants au clair de lune.',
+  "Dragon marin du grand large. Les marins le craignent autant qu'ils l'admirent.",
+  'Une petite salamandre dont la queue fume quand elle est contente.',
+  'Des crêtes de feu ont poussé sur son dos. Il dort dans les braises.',
+  'Un dragon de feu aux ailes immenses. Son souffle fait fondre la roche.',
+  'Un poussin couvert de cendre tiède. Il pépie des étincelles.',
+  "Un phénix flamboyant. On dit qu'il renaît de ses cendres.",
+  "Un diablotin farceur qui allume des feux de camp pour s'amuser.",
+  'Ses poings enflammés et ses cornes de lave impressionnent même les dresseurs aguerris.',
+  "Un bourgeon timide qui ne s'ouvre qu'au soleil.",
+  'Une créature fleurie à collerette. Elle sème des pétales en marchant.',
+  'Un esprit des bois qui veille sur les clairières.',
+  'Un lapin aux oreilles en forme de feuilles. Il bondit dans les hautes herbes.',
+  'Un lièvre véloce. La fleur sur sa tête suit le soleil.',
+  'Un petit cactus fleuri qui pique quand on le serre trop fort.',
+  'Un grand cactus aux bras levés, couronné de fleurs jaunes.',
+  'Un chaton qui porte un croissant de lune sur le front.',
+  'Une panthère nocturne, silencieuse comme une ombre.',
+  'Un ourson gourmand qui adore le miel des forêts.',
+  'Un grand ours cuirassé, protecteur des voyageurs.',
+  'Un faon tacheté et craintif.',
+  "Un cerf majestueux aux bois d'or.",
+  'Un petit hérisson qui se roule en boule au moindre bruit.',
+  'Ses piquants métalliques arrêtent presque toutes les attaques.',
+  'Un esprit de brume qui se forme les matins humides.',
+  'Un poussin duveteux qui rêve de voler.',
+  'Un faucon vif qui plonge sur sa proie.',
+  'Un grand rapace royal qui règne sur les falaises.',
+  'Un papillon lumineux attiré par les lanternes.',
+  'Ses ailes ornées de croissants brillent sous la lune.',
+  'Une mouette rieuse qui suit les bateaux de pêche.',
+  'Il peut planer des jours entiers sans battre des ailes.',
+  'Un petit manchot qui glisse sur le ventre.',
+  'Un manchot empereur au collier doré.',
+  'Un scarabée turquoise à la carapace brillante.',
+  'Un scarabée doré à grande corne, robuste comme un rocher.',
+  'Une grenouille bleue qui saute de nénuphar en nénuphar.',
+  'Un gros crapaud doré qui souffle des bulles.',
+  'Un serpent vert et discret des hautes herbes.',
+  'Un serpent à crête dont le regard fige ses adversaires.',
+  'Le dragon solaire légendaire du Sommet des Légendes.',
+  'Le colosse des abysses. Sa lanterne éclaire les fonds marins.'
 ];
 function dex() {
   if (busy) return;
@@ -121,11 +187,12 @@ function dexInfo(i) {
     ty = { N: 'Normal', F: 'Feu 🔥', E: 'Eau 💧', P: 'Plante 🌿', V: 'Vol 🕊' }[s.t],
     bar = (l, v) =>
       `<div class="sb"><span>${l}</span><div class="bar"><i style="width:${Math.min(100, v)}%;background:#4a9bf0"></i></div><em>${v}</em></div>`,
-    pre = SP.findIndex(x => x.ev && x.ev[1] == i),
+    pre = SP.findIndex(x => (x.ev && x.ev[1] == i) || (x.se && x.se[1] == i)),
     hab = maps.map(m => (m.e && m.e.s.includes(i) ? m.n : null)).filter(Boolean);
   panel(
-    `<h3>${String(i + 1).padStart(2, '0')} · ${s.n}</h3><div style="text-align:center">${spr(i, 130)}</div><p>Type : <b>${ty}</b> · ${cap ? '✅ Capturé' : '👁 Vu'}</p>${bar('PV', s.h)}${bar('Attaque', s.a)}${bar('Défense', s.d)}<p>${DESC[i]}</p>` +
+    `<h3>${String(i + 1).padStart(2, '0')} · ${s.n}</h3><div style="text-align:center">${spr(i, 130)}</div><p>Type : <b>${ty}</b> · ${cap ? '✅ Capturé' : '👁 Vu'}</p>${bar('PV', s.h)}${bar('Attaque', s.a)}${bar('Défense', s.d)}${DESC[i] ? `<p>${DESC[i]}</p>` : ''}` +
       (s.ev ? `<p>🔄 Évolue en <b>${SP[s.ev[1]].n}</b> au niveau ${s.ev[0]}.</p>` : '') +
+      (s.se ? `<p>🔄 Évolue en <b>${SP[s.se[1]].n}</b> avec la ${IT[s.se[0]][0]}.</p>` : '') +
       (pre >= 0 ? `<p>🔄 Évolution de <b>${SP[pre].n}</b>.</p>` : '') +
       (cap && hab.length ? `<p>📍 ${hab.join(', ')}</p>` : '') +
       (i == 16 ? '<p>📍 Grotte Lunaire</p>' : '') +
@@ -180,8 +247,9 @@ const NP = [
     ]
   }
 ];
+// les habitants se promènent de temps en temps
 setInterval(() => {
-  if (busy) return;
+  if (busy || document.hidden) return;
   NP.forEach(n => {
     if (n.m != G.map || n.st || Math.random() < 0.5) return;
     const d = [
@@ -482,8 +550,12 @@ function item() {
   ]);
   return true;
 }
+// tirage d'une espèce sauvage ; dans les zones de début de partie (niveau max ≤ 20),
+// Luciole apparaît en plus le jour, Spectro et Lunard la nuit
 const pick = a => {
   const h = new Date().getHours(),
-    p = [...a, ...(h >= 21 || h < 6 ? [15, 15, 8] : [13])];
+    E = maps[G.map] && maps[G.map].e,
+    early = !E || !E.l || E.l[1] <= 20,
+    p = [...a, ...(!early ? [] : h >= 21 || h < 6 ? [15, 15, 8] : [13])];
   return p[Math.floor(Math.random() * p.length)];
 };

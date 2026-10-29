@@ -80,7 +80,7 @@ const GUIDE = [
   ],
   [
     'Le menu ☰',
-    `<p><b>Équipe</b> : choisis qui est en tête. <b>Sac</b> : soigne tes créatures. <b>Quêtes</b> : ton objectif. <b>Bestiaire</b> : créatures vues et capturées. <b>Carte</b> : voyage rapide. <b>Succès</b>, <b>Paramètres</b>, <b>Sauvegarde</b>.</p><p>Raccourcis clavier : START/M menu, E équipe, V sac, Q quêtes, G bestiaire, SELECT/P paramètres.</p>`
+    `<p><b>Équipe</b> : choisis qui est en tête. <b>Sac</b> : soigne tes créatures. <b>Quêtes</b> : ton objectif. <b>Bestiaire</b> : créatures vues et capturées. <b>Carte</b> : voyage rapide. <b>Succès</b>, <b>Paramètres</b>, <b>Sauvegarde</b>.</p><p>Raccourcis clavier : START/M menu, E équipe, Q quêtes, V bestiaire, H histoire, G chemin en pointillé, T vue 3D, SELECT/P paramètres.</p>`
   ],
   [
     'Combat : les bases',
@@ -108,11 +108,11 @@ const GUIDE = [
   ],
   [
     'Niveaux et évolutions',
-    `<p>Au <b>niveau 8</b>, une créature apprend une 3e attaque, plus puissante, et au <b>niveau 20</b> une 4e, encore plus forte.</p><p>Les évolutions arrivent à certains niveaux : starters niveau 10, Piaf 9, Rattou 12, Mousse 12, Crabi 14. Une créature qui évolue devient bien plus forte.</p>`
+    `<p>Au <b>niveau 8</b>, une créature apprend une 3e attaque, plus puissante, et au <b>niveau 20</b> une 4e, encore plus forte.</p><p>Beaucoup de créatures évoluent en montant de niveau (par exemple : starters niveau 10, Piaf 9, Rattou 12, Mousse 12, Crabi 14). Quatre d'entre elles évoluent avec une <b>pierre</b> vendue par un colporteur caché. La fiche du Bestiaire indique comment chaque créature évolue.</p>`
   ],
   [
     'Arènes, badges, Ligue',
-    `<p>6 arènes : Cendrebourg, Lunargent, Pierrefeu, Havre-d'Opale, puis Ardenfeu et Cristalbourg dans l'acte II. On les fait dans l'ordre.</p><p>Après l'aube dorée, l'<b>archipel des étoiles</b> cache 3 arènes de plus (badges 9 à 11). Il faut <b>4 badges</b> pour atteindre le Mont Croissant. Après l'histoire, la <b>Ligue</b> (5 duels) et le <b>Palais de combat</b> (série de victoires) t'attendent sur le Plateau.</p>`
+    `<p><b>19 badges</b> à gagner, dans l'ordre :</p><p>Acte I : Cendrebourg (Ilex), Lunargent (Mira), Pierrefeu (Granit), Havre-d'Opale (Zéphyr).<br>Acte II : Ardenfeu (Brasier), Cristalbourg (Névé).<br>L'Aube dorée : Soleilmer (Aurore), Aubecime (Zénith).<br>L'archipel des étoiles : Port-Écume (Perle), Îlot des Vents (Aéris), Brumevert (Sylvane).<br>Les Terres d'Aube : Hautes-Terrasses (Flora), Lac-Miroir (Nérée), Forgeval (Cendra), Cimeneige (Bora), Sablerune (Sablon), Sylvéclat (Ronce), Havre-Citadelle (Houle), puis la Grande Maîtresse Solène au Sommet des Légendes (badge 19).</p><p>Il faut <b>4 badges</b> pour atteindre le Mont Croissant. Après l'histoire, la <b>Ligue</b> (5 duels) et le <b>Palais de combat</b> (série de victoires) t'attendent sur le Plateau.</p>`
   ],
   [
     'Quêtes et secrets',
@@ -120,7 +120,7 @@ const GUIDE = [
   ],
   [
     'Carte et niveaux conseillés',
-    `<p>Le chemin : Brumeval → Route 1 → Cendrebourg → Route 2 → Lunargent → Forêt d'Argent → Route 3 → Pierrefeu → Route 4 → Havre-d'Opale → Mont Croissant.</p><p>Niveaux conseillés : Route 1 : 3-6 · Cendrebourg : 8 · Route 2 : 8-11 · Lunargent : 11-12 · Forêt : 12-15 · Route 3 : 14-17 · Route 4 : 17-20 · Mont : 20-25 · Ligue : 30+ · Acte II : 34 à 52.</p><p>Voyage rapide : ☰ Menu → Carte, vers les villes déjà visitées.</p>`
+    `<p>Le chemin : Brumeval → Route 1 → Cendrebourg → Route 2 → Lunargent → Forêt d'Argent → Route 3 → Pierrefeu → Route 4 → Havre-d'Opale → Mont Croissant, puis vers le nord depuis le Plateau de la Ligue.</p><p>Niveaux conseillés : Route 1 : 3-6 · Cendrebourg : 8 · Route 2 : 8-11 · Lunargent : 11-12 · Forêt : 12-15 · Route 3 : 14-17 · Route 4 : 17-20 · Mont : 20-25 · Ligue : 30+ · Acte II : 34 à 52 · Aube dorée : 48 à 57 · Archipel : 56 à 66 · Terres d'Aube : 66 à 83.</p><p>Voyage rapide : ☰ Menu → Carte, vers les villes déjà visitées.</p>`
   ],
   [
     'Réglages et sauvegarde',
@@ -718,6 +718,7 @@ const obj = () => {
   const x = curStep();
   return x ? x.obj : 'Histoire terminée ! Termine les quêtes et le Bestiaire.';
 };
+// temps de jeu : ne compte que quand la partie est lancée et l'onglet visible
 setInterval(() => {
-  if ($('ti').style.display == 'none') G.sx.time++;
+  if ($('ti').style.display == 'none' && !document.hidden) G.sx.time++;
 }, 1000);
