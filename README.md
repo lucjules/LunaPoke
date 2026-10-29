@@ -1,6 +1,6 @@
 # Aérélia — La légende des Éclats lunaires
 
-Jeu d'aventure et de capture de créatures au style rétro (console portable), écrit en un seul fichier HTML/JavaScript, sans dépendance ni étape de build.
+Jeu d'aventure et de capture de créatures au style rétro (console portable), écrit en HTML, CSS et JavaScript, sans dépendance ni étape de build.
 
 ## Lancer le jeu
 
@@ -25,3 +25,45 @@ Ouvrir `index.html` dans un navigateur (ordinateur ou mobile). La seule ressourc
 - Vue 2D en tuiles et mode 3D (raycasting) activable avec le bouton « 3D »
 - 3 emplacements de sauvegarde (stockés dans le `localStorage` du navigateur)
 - Réglage automatique de la qualité graphique selon les performances de l'appareil
+
+## Organisation du code
+
+```
+index.html              page du jeu : structure HTML et ordre de chargement
+css/
+  layout.css            mise en page, croix directionnelle, boutons, mobile
+  retro.css             style « console portable » : dialogues, menus, écran titre, combat
+  menus.css             finitions des menus et écran des sauvegardes
+js/
+  engine/               moteur (graphismes, son, contrôles)
+    core.js             constantes, qualité graphique auto, performances
+    render2d.js         rendu 2D en tuiles
+    render3d.js         vue 3D à la première personne (raycasting)
+    buildings3d.js      bâtiments et accessoires en vraie 3D
+    scenery3d.js        décor 3D, ambiance, arène de combat 3D
+    creatures3d.js      modèles 3D des créatures
+    humans3d.js         personnages humains en 3D
+    attack-fx.js        particules et effets des attaques, bruitages
+    sprites.js          générateur de sprites pixel-art
+    audio-weather.js    météo et musique
+    controls.js         clavier, croix, boutons A/B/START/SELECT
+  game/                 règles et contenu du jeu
+    species.js          espèces de base, attaques, types
+    maps.js             construction des cartes
+    state.js            état de la partie, sauvegarde, chargement
+    dialog.js           dialogues et choix
+    battle.js           système de combat
+    events.js           événements de la carte, dresseurs, arènes
+    battle-anim.js      animations de combat
+    cinematics.js       cinématiques, intro, boucle d'affichage
+    menus.js            équipe, bestiaire, quêtes des habitants
+    story.js            guide, histoire, quêtes annexes
+    ui.js               menu, carte du monde, paramètres, succès, PC, Ligue
+    items.js            objets, sac, boutique
+  acts/                 actes III à V (nouvelles zones, espèces, arènes)
+  main.js               démarrage
+```
+
+Les fichiers sont de simples scripts (pas de modules) qui partagent les mêmes variables globales. **L'ordre des balises `<script>` dans `index.html` compte** : un fichier peut utiliser ce que définissent les fichiers chargés avant lui. Les fonctions des fichiers suivants restent utilisables dans du code exécuté plus tard (pendant le jeu), mais pas au moment du chargement.
+
+Pour tester en local, ouvrir `index.html` directement ou lancer un petit serveur : `python3 -m http.server` puis aller sur http://localhost:8000.
