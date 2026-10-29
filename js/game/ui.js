@@ -345,7 +345,7 @@ function settings() {
       L('Astuces du tutoriel', cb('tips')) +
       `<h4>⚡ Performances</h4><div id="pi">Test : score ${bc.n} · ${bc.cores} cœurs · ${bc.coarse ? 'tactile' : 'ordinateur'} · ${perf.fps || 0} FPS · qualité ${Q.n}${S.q ? '' : ' (auto)'}</div><div><button id="bq">Relancer le test de performance</button></div><h4>📊 Statistiques</h4><div class="stg"><span>⏱ Temps</span><b>${fmt(G.sx.time)}</b><span>👣 Pas</span><b>${G.sx.steps}</b><span>⚔ Victoires</span><b>${G.sx.wins}/${G.sx.battles}</b><span>🎯 Captures</span><b>${G.sx.caught}</b><span>📖 Bestiaire</span><b>${G.dex.s.length}/${SP.length} vus</b><span>🏅 Badges</span><b>${G.badge}/19</b></div>
  <h4>💾 Sauvegarde</h4><textarea id="sv" rows="3" style="width:100%"></textarea><div><button id="cp">Exporter</button> <button id="im">Importer</button> <button id="rz">Nouvelle partie</button> <button id="ts">Changer de fichier</button> <button id="tt">Revoir les astuces</button></div><small id="sm"></small>
- <h4>🕹 Commandes</h4><small>Croix / flèches / WASD · A = Z ou Espace · B = X ou Échap (maintenu : courir) · START = Entrée ou M · SELECT = P · raccourcis E équipe, Q quêtes, V bestiaire, H histoire, G chemin, T vue 3D</small>`
+ <h4>🕹 Commandes</h4><small>Croix / flèches / WASD · A = Z ou Espace · B = X ou Échap (maintenu : courir) · START = Entrée ou M · SELECT = P · raccourcis E équipe, B sac, Q quêtes, V bestiaire, H histoire, G chemin, T vue 3D</small>`
   );
   document.querySelectorAll('#pn [data-k]').forEach(
     el =>

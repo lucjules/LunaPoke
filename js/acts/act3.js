@@ -167,7 +167,7 @@ STORY.splice(
     obj: "Bats Aurore à l'arène de Soleilmer (badge 7).",
     h: [
       "L'arène est le grand bâtiment à droite en haut.",
-      'Aurore utilise la Plante et le Vol : le Feu est efficace.'
+      "Aurore utilise la Plante et le Vol : le Feu bat ses Plantes, l'Eau ses Vols."
     ],
     done: () => G.badge >= 7,
     m: 33,

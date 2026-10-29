@@ -746,7 +746,7 @@ NOA[ORIM] = [
       obj: "Bats Aéris à l'arène de l'Îlot des Vents (badge 10).",
       h: [
         "L'arène est le grand bâtiment à gauche en haut.",
-        "Aéris utilise le Vol : le Feu et l'Eau tiennent bon."
+        "Aéris utilise le Vol : l'Eau est très efficace, la Plante à éviter."
       ],
       done: () => G.badge >= 10,
       m: A4 + 3,

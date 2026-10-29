@@ -346,6 +346,8 @@ function setCur(b) {
   cur = b;
   if (b) {
     b.classList.add('cur');
+    // en combat, la description de l'attaque sous le curseur s'affiche dans la boîte de message
+    if (b.dataset.info) $('msg').textContent = b.dataset.info;
     try {
       const L = layer();
       if (L && L === $('pn') && navBtns(L)[0] === b) L.scrollTop = 0;
@@ -424,6 +426,8 @@ function padEdge(v) {
 }
 function pressA() {
   if ($('dlg').style.display == 'block') return showD();
+  // en combat, A fait défiler le message en cours
+  if (msgSkip && !$('mn').querySelector('button')) return msgSkip();
   const L = layer();
   if (L) {
     const bs = navBtns(L),
@@ -504,7 +508,17 @@ addEventListener('keydown', e => {
     if (!e.repeat) pressB();
     return;
   }
-  const sc = { e: team, q: quests, v: dex, m: hub, p: settings, h: story, g: toggleGuide, t: toggle3d }[lk];
+  const sc = {
+    e: team,
+    b: bag,
+    q: quests,
+    v: dex,
+    m: hub,
+    p: settings,
+    h: story,
+    g: toggleGuide,
+    t: toggle3d
+  }[lk];
   if (sc && !busy && !layer()) return sc();
   if (K[k]) {
     e.preventDefault();

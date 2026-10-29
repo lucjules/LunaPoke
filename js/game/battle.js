@@ -21,10 +21,15 @@ const bmenu = (a, o) =>
     const mn = $('mn');
     const show = (items, back) => {
       mn.innerHTML = '';
-      items.forEach(([t, v, d, cb]) => {
+      items.forEach(([t, v, d, cb, info]) => {
         const b = document.createElement('button');
         b.textContent = t;
         b.disabled = !!d;
+        if (info) {
+          // description affichée quand le curseur ou la souris passe sur l'attaque
+          b.dataset.info = info;
+          b.onpointerenter = () => ($('msg').textContent = info);
+        }
         b.onclick = () => {
           if (cb) cb();
           else {
@@ -55,7 +60,17 @@ const bmenu = (a, o) =>
           0,
           () =>
             show(
-              mvs(a).map(k => [MV[k][0], { k: 'atk', m: k }]),
+              mvs(a).map(k => {
+                const tg = B.dbl ? (B.E || [])[0] : F(),
+                  e = MV[k][1] && tg ? eff(k[0], SP[tg.s].t) : 1;
+                return [
+                  MV[k][0] + (e > 1 ? ' ▲' : e < 1 ? ' ▼' : ''),
+                  { k: 'atk', m: k },
+                  0,
+                  null,
+                  `${MV[k][0]} : ${mvDesc(k)}.${e > 1 ? ' Super efficace !' : e < 1 ? ' Peu efficace.' : ''}`
+                ];
+              }),
               main
             )
         ],
@@ -104,14 +119,10 @@ async function round2() {
     pl.push({ a, k: 'atk', m: p.m, t });
   }
   for (const e of E) {
-    const ms = mvs(e),
-      tg = A[Math.floor(Math.random() * A.length)];
-    let m = ms[Math.random() < 0.6 ? ms.length - 1 : 0];
-    if (B.t && Math.random() < 0.7)
-      m = ms.reduce((b, k) => (eff(k[0], SP[tg.s].t) * MV[k][1] > eff(b[0], SP[tg.s].t) * MV[b][1] ? k : b));
-    pl.push({ a: e, k: 'atk', m, t: tg });
+    const tg = A[Math.floor(Math.random() * A.length)];
+    pl.push({ a: e, k: 'atk', m: aiMove(e, tg), t: tg });
   }
-  pl.sort((x, y) => spd(y.a) - spd(x.a));
+  pl.sort((x, y) => (y.k == 'atk' ? prio(y.m) : 0) - (x.k == 'atk' ? prio(x.m) : 0) || spd(y.a) - spd(x.a));
   for (const p of pl) {
     if (p.a.hp <= 0) continue;
     if (p.k == 'pot') {
@@ -158,10 +169,23 @@ function rn() {
   info(f, 'fi', 0);
   info(m, 'mi', 1);
 }
+// message de combat : s'affiche SPD ms, ou moins si le joueur touche l'écran / appuie sur A
+let msgSkip = null;
 const msg = t => {
   $('msg').textContent = tr(t);
-  return sleep(SPD);
+  return new Promise(r => {
+    const done = () => {
+      clearTimeout(id);
+      msgSkip = null;
+      r();
+    };
+    const id = setTimeout(done, SPD);
+    msgSkip = done;
+  });
 };
+$('bt').addEventListener('pointerdown', e => {
+  if (msgSkip && !e.target.closest('#mn')) msgSkip();
+});
 function menu() {
   return bmenu(M(), { ball: !B.t, sp: 1, sw: 1, run: B.run ? 1 : 0 });
 }
@@ -177,7 +201,8 @@ const pickMon = () =>
     );
   });
 async function attack(a, d, k) {
-  const [n, p] = MV[k];
+  const [n, p] = MV[k],
+    fe = MVE[k] || {};
   if (a.st == 'slp') {
     if (Math.random() < 0.4) {
       a.st = 0;
@@ -196,7 +221,14 @@ async function attack(a, d, k) {
   try {
     heroAct(a);
   } catch (e) {}
-  await fx(k, B.f.includes(d));
+  // une attaque sans dégâts qui agit sur le lanceur n'a pas d'animation vers l'adversaire
+  if (!p && (fe.me || fe.heal)) sfx(660, 0.15);
+  else await fx(k, B.f.includes(d));
+  if (!p) {
+    await moveFx(a, d, fe, p, 0);
+    await after(a, d, k);
+    return;
+  }
   const e = eff(k[0], SP[d.s].t),
     crit = Math.random() < (a.it == 'lu' ? 0.2 : 0.1);
   const hp0 = d.hp;
@@ -206,8 +238,8 @@ async function attack(a, d, k) {
       Math.max(
         1,
         Math.floor(
-          ((((2 * a.lv) / 5 + 2) * p * a.at * (a.it == 'gr' ? 1.15 : 1)) /
-            (d.df * (d.it == 'ec' ? 1.15 : 1)) /
+          ((((2 * a.lv) / 5 + 2) * p * a.at * stg(a, 'a') * (a.it == 'gr' ? 1.15 : 1)) /
+            (d.df * stg(d, 'd') * (d.it == 'ec' ? 1.15 : 1)) /
             14 +
             2) *
             e *
@@ -242,8 +274,66 @@ async function attack(a, d, k) {
   }
   if (e > 1) await msg("C'est super efficace !");
   else if (e < 1) await msg("Ce n'est pas très efficace…");
+  await moveFx(a, d, fe, p, hp0 - d.hp);
   await after(a, d, k);
 }
+// effets propres aux attaques : vol de PV, soin, modification de caractéristique, statut
+async function moveFx(a, d, fe, p, dealt) {
+  if (fe.drain && dealt > 0 && a.hp > 0) {
+    const h = Math.max(1, Math.floor(dealt * fe.drain));
+    a.hp = Math.min(a.mh, a.hp + h);
+    rn();
+    await msg(`${nm(a)} récupère ${h} PV.`);
+  }
+  if (fe.heal) {
+    if (a.hp >= a.mh) await msg(`Les PV de ${nm(a)} sont déjà au maximum.`);
+    else {
+      a.hp = Math.min(a.mh, a.hp + Math.ceil(a.mh * fe.heal));
+      rn();
+      await msg(`${nm(a)} récupère des PV !`);
+    }
+  }
+  const t = fe.me ? a : d;
+  if ((fe.a || fe.d) && t.hp > 0 && Math.random() < (fe.ch || 1)) {
+    const s = fe.a ? 'a' : 'd',
+      v = fe.a || fe.d,
+      w = s == 'a' ? "L'attaque" : 'La défense';
+    t.bs = t.bs || { a: 0, d: 0 };
+    const nv = Math.max(-3, Math.min(3, t.bs[s] + v));
+    if (nv == t.bs[s]) await msg(`${w} de ${nm(t)} ne peut plus ${v > 0 ? 'monter' : 'baisser'} !`);
+    else {
+      t.bs[s] = nv;
+      await msg(`${w} de ${nm(t)} ${v > 0 ? 'augmente' : 'baisse'} !`);
+    }
+  }
+  if (fe.st && d.hp > 0) {
+    if (d.st) {
+      if (!p) await msg(`Ça n'a aucun effet sur ${nm(d)}…`);
+    } else if (Math.random() < fe.ch) {
+      d.st = fe.st;
+      rn();
+      await msg(`${nm(d)} ${{ brn: 'est brûlé', slp: "s'endort", par: 'est paralysé' }[fe.st]} !`);
+    } else if (!p) await msg(`${nm(d)} évite l'attaque !`);
+  }
+}
+// choix d'attaque des adversaires : les attaques de soutien quand elles servent, sinon une
+// attaque offensive (la plus forte le plus souvent ; les dresseurs visent souvent le bon type)
+function aiMove(f, tg) {
+  const ms = mvs(f),
+    sg = SIG[f.s],
+    fe = MVE[sg] || {};
+  if (ms.includes(sg) && !MV[sg][1]) {
+    if (fe.heal && f.hp < f.mh * 0.45 && Math.random() < 0.5) return sg;
+    if (fe.st && !tg.st && Math.random() < 0.3) return sg;
+    if ((fe.a || fe.d) && Math.random() < 0.15) return sg;
+  }
+  const dm = ms.filter(k => MV[k][1] > 0);
+  let m = dm[Math.random() < 0.6 ? dm.length - 1 : 0];
+  if (B.t && Math.random() < 0.7)
+    m = dm.reduce((b, k) => (eff(k[0], SP[tg.s].t) * MV[k][1] > eff(b[0], SP[tg.s].t) * MV[b][1] ? k : b));
+  return m;
+}
+const prio = k => (MVE[k] || {}).prio || 0;
 async function after(a, d, k) {
   if (d.hp > 0 && d.it == 'ba' && d.hp < d.mh / 3) {
     d.it = 0;
@@ -251,7 +341,7 @@ async function after(a, d, k) {
     rn();
     await msg(`${nm(d)} mange sa Baie Soin !`);
   }
-  if (d.hp > 0 && !d.st && Math.random() < 0.25) {
+  if (d.hp > 0 && !d.st && MV[k][1] > 0 && !(MVE[k] || {}).st && Math.random() < 0.25) {
     const t = { F: 'brn', P: 'slp', E: 'par' }[k[0]];
     if (t) {
       d.st = t;
@@ -270,6 +360,7 @@ async function gain(me, f) {
   me.xp += xp;
   await msg(`${nm(me)} gagne ${xp} points d'expérience.`);
   while (me.xp >= me.lv * me.lv * 2 + 8) {
+    const known = mvs(me);
     me.xp -= me.lv * me.lv * 2 + 8;
     const o = me.mh;
     me.lv++;
@@ -294,6 +385,7 @@ async function gain(me, f) {
       mark(me.s, 1);
       rn();
     }
+    for (const k of mvs(me)) if (!known.includes(k)) await msg(`${nm(me)} apprend ${MV[k][0]} !`);
   }
 }
 const BGT = {
@@ -846,19 +938,13 @@ async function battle(foes, title, run, dbl) {
   } catch (e) {}
   tip(
     'battle',
-    'Choisis une attaque : Feu > Plante > Eau > Feu. Affaiblis un sauvage puis lance une Capsule !'
+    'Choisis une attaque : Feu > Plante > Eau > Feu, Vol > Plante, Eau > Vol. ▲ = efficace, ▼ = peu efficace. Affaiblis un sauvage puis lance une Capsule !'
   );
   await msg(title ? `${title} te défie !` : `Un ${nm(F())} sauvage apparaît !`);
-  const foeTurn = async () => {
+  const foeTurn = async mk => {
     const f = F(),
       me = M();
-    const ms = mvs(f);
-    let mk2 = ms[Math.random() < 0.6 ? ms.length - 1 : 0];
-    if (B.t && Math.random() < 0.7)
-      mk2 = ms.reduce((b, k) =>
-        eff(k[0], SP[me.s].t) * MV[k][1] > eff(b[0], SP[me.s].t) * MV[b][1] ? k : b
-      );
-    await attack(f, me, mk2);
+    await attack(f, me, mk || aiMove(f, me));
     if (me.hp <= 0) {
       await msg(`${nm(me)} est K.O. !`);
       const n = G.party.findIndex(c => c.hp > 0);
@@ -893,6 +979,7 @@ async function battle(foes, title, run, dbl) {
     } else if (a.k == 'sw') {
       const n = await pickMon();
       if (n != null) {
+        delete me.bs;
         B.m = n;
         rn();
         try {
@@ -937,9 +1024,11 @@ async function battle(foes, title, run, dbl) {
         await foeTurn();
       }
     } else {
-      const first = spd(f) > spd(me);
+      // les attaques prioritaires passent d'abord, puis la plus rapide
+      const fm = aiMove(f, me),
+        first = prio(fm) > prio(a.m) || (prio(fm) == prio(a.m) && spd(f) > spd(me));
       if (first) {
-        await foeTurn();
+        await foeTurn(fm);
         if (res || M() !== me) continue;
       }
       await attack(me, f, a.m);
@@ -955,7 +1044,7 @@ async function battle(foes, title, run, dbl) {
           } catch (e) {}
           await msg(`${title} envoie ${nm(F())} !`);
         }
-      } else if (!first) await foeTurn();
+      } else if (!first) await foeTurn(fm);
     }
   }
   if (res == 'win') {
@@ -969,7 +1058,10 @@ async function battle(foes, title, run, dbl) {
   }
   $('bt').style.display = 'none';
   busy = false;
-  G.party.forEach(c => (c.st = 0));
+  G.party.concat(G.box).forEach(c => {
+    c.st = 0;
+    delete c.bs;
+  });
   if (res == 'lose') {
     heal();
     go(0, maps[0].sp[0], maps[0].sp[1]);

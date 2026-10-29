@@ -57,9 +57,27 @@ SP[7].se = ['pf', 34];
 SP[23].se = ['pm', 35];
 SP[24].se = ['ps', 36];
 SP[8].se = ['pl', 37];
+// attaque propre à chaque espèce (apprise au niveau 12), par numéro d'espèce
+const SIG = [
+  ...['FC', 'EB', 'PG', 'NV', 'VR', 'PS', 'EB', 'FB', 'NE', 'FC'],
+  ...['ES', 'PR', 'VP', 'PS', 'NC', 'NG', 'NE', 'NG', 'NC', 'PS'],
+  ...['NB', 'VB', 'FE', 'EB', 'PG', 'VB', 'NC', 'FD', 'EG', 'NC'],
+  ...['VR', 'ND', 'PE', 'NE', 'FE', 'ES', 'PS', 'NE', 'FD', 'EB'],
+  ...['PR', 'NG', 'VP', 'FE', 'EB', 'VB', 'PR', 'FB', 'NC', 'NE'],
+  ...['NE', 'EP', 'EP', 'EG', 'EG', 'NC', 'PR', 'EP', 'ES', 'EC'],
+  ...['FC', 'FC', 'FE', 'FB', 'FR', 'FB', 'FC', 'PG', 'PS', 'PR'],
+  ...['NV', 'PE', 'PE', 'PE', 'NE', 'NV', 'NG', 'NC', 'NV', 'NB'],
+  ...['NC', 'PE', 'NG', 'VR', 'VR', 'VP', 'PS', 'PS', 'VB', 'VB'],
+  ...['EG', 'EG', 'NC', 'NB', 'EB', 'EB', 'PG', 'NF', 'FE', 'EC']
+];
+const SIG_LV = 12;
+// attaques connues : Normale + type dès le départ, puis type 2 (niv. 8), attaque propre (niv. 12),
+// type 3 (niv. 20) ; la plus puissante reste en dernier (les adversaires la choisissent souvent)
 const mvs = c => {
-  const t = SP[c.s].t;
-  return c.lv >= 20 ? ['N', t, t + '2', t + '3'] : c.lv >= 8 ? ['N', t, t + '2'] : ['N', t];
+  const t = SP[c.s].t,
+    l = c.lv >= 20 ? ['N', t, t + '2', t + '3'] : c.lv >= 8 ? ['N', t, t + '2'] : ['N', t];
+  if (c.lv >= SIG_LV && SIG[c.s]) l.splice(Math.min(2, l.length), 0, SIG[c.s]);
+  return [...new Set(l)];
 };
 const spd = c => {
   const b = SP[c.s];
@@ -80,9 +98,88 @@ const MV = {
   E3: ['Tsunami', 95],
   P3: ['Rayon de verdure', 95],
   V3: ['Ouragan', 90],
-  N3: ['Coup de tonnerre', 95]
+  N3: ['Coup de tonnerre', 95],
+  // attaques propres aux espèces (la 1re lettre de la clé donne le type)
+  FB: ['Feu follet', 0],
+  FC: ['Crocs feu', 60],
+  FD: ['Danse flamme', 0],
+  FE: ['Éruption', 95],
+  FR: ['Renaissance', 0],
+  EB: ['Bulles', 45],
+  ES: ['Source vive', 0],
+  EG: ['Souffle gelé', 60],
+  EP: ['Aqua-jet', 45],
+  EC: ['Cascade', 85],
+  PS: ['Poudre dodo', 0],
+  PG: ['Giga-sève', 60],
+  PR: ['Racines', 0],
+  PE: ['Épines', 70],
+  VR: ['Vif-envol', 45],
+  VB: ['Bourrasque', 60],
+  VP: ['Piqué', 90],
+  NV: ['Vive-attaque', 45],
+  NG: ['Grondement', 0],
+  NC: ['Carapace', 0],
+  NB: ['Bélier', 80],
+  NE: ['Éclat lunaire', 75],
+  ND: ['Vampirisme', 55],
+  NF: ['Regard figé', 0]
 };
-const up = ['F>P', 'P>E', 'E>F', 'V>P'],
-  dn = ['P>F', 'F>E', 'E>P'];
+// effets : st = statut infligé (ch = chance), a / d = attaque / défense modifiée (me = sur soi),
+// heal = soin (part des PV max), drain = part des dégâts récupérée, prio = agit en premier
+const MVE = {
+  FB: { st: 'brn', ch: 0.9 },
+  FC: { st: 'brn', ch: 0.2 },
+  FD: { me: 1, a: 1 },
+  FE: { me: 1, d: -1 },
+  FR: { heal: 0.5 },
+  EB: { a: -1 },
+  ES: { heal: 0.4 },
+  EG: { st: 'par', ch: 0.25 },
+  EP: { prio: 1 },
+  PS: { st: 'slp', ch: 0.75 },
+  PG: { drain: 0.5 },
+  PR: { heal: 0.25, me: 1, d: 1 },
+  PE: { d: -1, ch: 0.3 },
+  VR: { prio: 1 },
+  VB: { d: -1, ch: 0.5 },
+  NV: { prio: 1 },
+  NG: { a: -1 },
+  NC: { me: 1, d: 1 },
+  NE: { d: -1, ch: 0.2 },
+  ND: { drain: 0.5 },
+  NF: { st: 'par', ch: 0.9 }
+};
+const TYN = { N: 'Normal', F: 'Feu', E: 'Eau', P: 'Plante', V: 'Vol' };
+// description courte d'une attaque (menu de combat, bestiaire)
+const mvDesc = k => {
+  const p = MV[k][1],
+    e = MVE[k] || {},
+    pct = v => Math.round(v * 100) + ' %',
+    l = [TYN[k[0]], p ? 'puissance ' + p : 'sans dégâts'];
+  if (e.prio) l.push('agit en premier');
+  if (e.st)
+    l.push(
+      { brn: 'brûle', slp: 'endort', par: 'paralyse' }[e.st] + (e.ch < 1 && p ? ' (' + pct(e.ch) + ')' : '')
+    );
+  if (e.heal) l.push('soigne ' + pct(e.heal) + ' des PV');
+  if (e.drain) l.push('récupère ' + pct(e.drain) + ' des dégâts');
+  if (e.a || e.d)
+    l.push(
+      (e.a ? 'Attaque' : 'Défense') +
+        (e.me ? '' : ' adverse') +
+        ((e.a || e.d) > 0 ? ' +' : ' −') +
+        (e.ch && e.ch < 1 ? ' (' + pct(e.ch) + ')' : '')
+    );
+  return l.join(', ');
+};
+// multiplicateur d'une caractéristique modifiée en combat (de −3 à +3)
+const stg = (c, s) => {
+  const v = (c.bs && c.bs[s]) || 0;
+  return v >= 0 ? (2 + v) / 2 : 2 / (2 - v);
+};
+// table des types : Feu > Plante > Eau > Feu, Vol > Plante, Eau > Vol (la pluie détrempe les ailes)
+const up = ['F>P', 'P>E', 'E>F', 'V>P', 'E>V'],
+  dn = ['P>F', 'F>E', 'E>P', 'P>V'];
 const eff = (a, d) =>
   up.includes(a + '>' + d) ? 2 : dn.includes(a + '>' + d) || (a == d && a != 'N') ? 0.5 : 1;

@@ -80,7 +80,7 @@ const GUIDE = [
   ],
   [
     'Le menu ☰',
-    `<p><b>Équipe</b> : choisis qui est en tête. <b>Sac</b> : soigne tes créatures. <b>Quêtes</b> : ton objectif. <b>Bestiaire</b> : créatures vues et capturées. <b>Carte</b> : voyage rapide. <b>Succès</b>, <b>Paramètres</b>, <b>Sauvegarde</b>.</p><p>Raccourcis clavier : START/M menu, E équipe, Q quêtes, V bestiaire, H histoire, G chemin en pointillé, T vue 3D, SELECT/P paramètres.</p>`
+    `<p><b>Équipe</b> : choisis qui est en tête. <b>Sac</b> : soigne tes créatures. <b>Quêtes</b> : ton objectif. <b>Bestiaire</b> : créatures vues et capturées. <b>Carte</b> : voyage rapide. <b>Succès</b>, <b>Paramètres</b>, <b>Sauvegarde</b>.</p><p>Raccourcis clavier : START/M menu, E équipe, B sac, Q quêtes, V bestiaire, H histoire, G chemin en pointillé, T vue 3D, SELECT/P paramètres.</p>`
   ],
   [
     'Combat : les bases',
@@ -88,7 +88,7 @@ const GUIDE = [
   ],
   [
     'Les types',
-    `<p>🔥 Feu bat 🌿 Plante · 🌿 Plante bat 💧 Eau · 💧 Eau bat 🔥 Feu · 🕊 Vol bat 🌿 Plante.</p><p>Une attaque « super efficace » fait ×2 de dégâts ; « pas très efficace » fait ×0,5 (même type = ×0,5). Le type Normal n'est ni fort ni faible.</p><p>Chaque créature a une attaque Normale et une attaque de son type (plus une 3e au niveau 8).</p>`
+    `<p>🔥 Feu bat 🌿 Plante · 🌿 Plante bat 💧 Eau · 💧 Eau bat 🔥 Feu · 🕊 Vol bat 🌿 Plante · 💧 Eau bat 🕊 Vol.</p><p>Une attaque « super efficace » fait ×2 de dégâts ; « pas très efficace » fait ×0,5 (même type = ×0,5, et la Plante résiste au Vol). Le type Normal n'est ni fort ni faible.</p><p>Dans le menu Combat, ▲ signale une attaque efficace contre l'adversaire et ▼ une attaque peu efficace ; passe le curseur sur une attaque pour voir son type, sa puissance et son effet.</p><p>Chaque créature connaît une attaque Normale et une attaque de son type, en apprend une 3e au niveau 8, <b>son attaque propre au niveau 12</b> (soin, statut, vitesse…) et une 4e au niveau 20.</p>`
   ],
   [
     'Capturer',
@@ -286,7 +286,7 @@ const STORY = [
     obj: "Bats Zéphyr à l'arène du port (badge 4).",
     h: [
       "L'arène est le grand bâtiment à gauche en haut.",
-      'Le Vol bat la Plante : emmène plutôt des créatures Normal ou Eau.'
+      "Le Vol bat la Plante : emmène plutôt des créatures d'Eau, très efficaces contre lui."
     ],
     done: () => G.badge >= 4,
     m: 17,
@@ -361,7 +361,7 @@ const STORY = [
     obj: "Bats Névé à l'arène de Cristalbourg (badge 6).",
     h: [
       "L'arène est le grand bâtiment à gauche en haut.",
-      "Névé utilise l'Eau et le Vol : la Plante n'est pas ton amie."
+      "Névé utilise l'Eau et le Vol : la Plante bat l'Eau mais résiste mal au Vol."
     ],
     done: () => G.badge >= 6,
     m: 26,

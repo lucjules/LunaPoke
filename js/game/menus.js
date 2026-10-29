@@ -193,6 +193,9 @@ function dexInfo(i) {
     `<h3>${String(i + 1).padStart(2, '0')} · ${s.n}</h3><div style="text-align:center">${spr(i, 130)}</div><p>Type : <b>${ty}</b> · ${cap ? '✅ Capturé' : '👁 Vu'}</p>${bar('PV', s.h)}${bar('Attaque', s.a)}${bar('Défense', s.d)}${DESC[i] ? `<p>${DESC[i]}</p>` : ''}` +
       (s.ev ? `<p>🔄 Évolue en <b>${SP[s.ev[1]].n}</b> au niveau ${s.ev[0]}.</p>` : '') +
       (s.se ? `<p>🔄 Évolue en <b>${SP[s.se[1]].n}</b> avec la ${IT[s.se[0]][0]}.</p>` : '') +
+      (SIG[i]
+        ? `<p>⚔ Attaque propre (niveau ${SIG_LV}) : <b>${MV[SIG[i]][0]}</b> — ${mvDesc(SIG[i])}.</p>`
+        : '') +
       (pre >= 0 ? `<p>🔄 Évolution de <b>${SP[pre].n}</b>.</p>` : '') +
       (cap && hab.length ? `<p>📍 ${hab.join(', ')}</p>` : '') +
       (i == 16 ? '<p>📍 Grotte Lunaire</p>' : '') +
