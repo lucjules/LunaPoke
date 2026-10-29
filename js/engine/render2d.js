@@ -803,6 +803,49 @@ function itile(c, x, y, px, py, r, t, k) {
     cx.fillStyle = 'rgba(120,220,160,.7)';
     cx.fillRect(px + 6, py + 10, 3, 10);
     cx.fillRect(px + 18, py + 6, 3, 12);
+  } else if (c == 'c') {
+    // tapis : bordure dorée sur les côtés qui ne touchent pas un autre morceau de tapis
+    const g = maps[G.map].g,
+      col = ['#8e2b3a', '#2f5d8a', '#3f6e3a', '#7a4a8a'][hs(G.map, 7) % 4],
+      F = (a, b, w, h, c2) => {
+        cx.fillStyle = c2;
+        cx.fillRect(px + a, py + b, w, h);
+      };
+    F(0, 0, T, T, col);
+    for (let i = 0; i < 4; i++) F(4 + i * 7, 4 + ((i * 5) % 9), 4, 4, 'rgba(255,230,160,.18)');
+    if (g[y - 1]?.[x] != 'c') F(0, 0, T, 3, '#d9b45a');
+    if (g[y + 1]?.[x] != 'c') F(0, T - 3, T, 3, '#d9b45a');
+    if (g[y]?.[x - 1] != 'c') F(0, 0, 3, T, '#d9b45a');
+    if (g[y]?.[x + 1] != 'c') F(T - 3, 0, 3, T, '#d9b45a');
+  } else if (c == 'a') {
+    // table et chaises
+    const F = (a, b, w, h, c2) => {
+      cx.fillStyle = c2;
+      cx.fillRect(px + a, py + b, w, h);
+    };
+    F(2, 22, 28, 6, 'rgba(0,0,0,.2)');
+    F(4, 6, 24, 4, '#7a4e2a');
+    F(3, 8, 26, 12, '#a8703a');
+    F(3, 8, 26, 2, '#c99058');
+    F(5, 20, 3, 8, '#6b4423');
+    F(24, 20, 3, 8, '#6b4423');
+    F(12, 10, 8, 6, '#f4f0e6');
+    F(14, 11, 4, 3, '#e63946');
+  } else if (c == 'h') {
+    // cheminée en pierre avec un feu qui crépite
+    const F = (a, b, w, h, c2) => {
+      cx.fillStyle = c2;
+      cx.fillRect(px + a, py + b, w, h);
+    };
+    F(0, 0, T, T, '#8a8478');
+    for (let j = 0; j < 4; j++) F((j % 2) * 8, j * 8 + 7, T, 1, 'rgba(0,0,0,.18)');
+    F(0, 0, T, 4, '#6a645a');
+    F(5, 10, 22, 22, '#2a1c16');
+    const fl = Math.sin(t / 90 + x) * 2;
+    F(8, 22 - fl, 16, 10 + fl, '#e8601c');
+    F(11, 25 - fl, 10, 7 + fl, '#ffb02e');
+    F(14, 28, 4, 4, '#fff0a0');
+    F(7, 29, 18, 3, '#4a2a1a');
   } else if (c == 'N' && !(k == 'cave' && G.q.lun)) {
     cx.fillStyle = 'rgba(0,0,0,.2)';
     cx.beginPath();

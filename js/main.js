@@ -143,6 +143,24 @@ $('go').onclick = () => {
   const mist = wild.find(m => m.th == 'mist');
   if (mist && !found(82)) mist.e.s.push(82);
 })();
+// mobilier des intérieurs : tapis, table, cheminée et plantes, disposés selon la maison
+// (le passage de la porte au personnage reste toujours libre)
+maps.forEach((m, mi) => {
+  if (!m.in) return;
+  const g = m.g,
+    h = hs(mi * 17, 3),
+    set = (x, y, c) => {
+      if (g[y] && g[y][x] == '.') g[y][x] = c;
+    };
+  if (m.k == 'home') {
+    for (let y = 5; y <= 7; y++) for (let x = 5; x <= 9; x++) set(x, y, 'c');
+    if (h % 2) [3, 4].forEach(x => set(x, 6, 'a'));
+    else [10, 11].forEach(x => set(x, 7, 'a'));
+    if (h % 3 != 1) [7, 8].forEach(x => set(x, 1, 'h'));
+    set(h % 2 ? 13 : 1, 8, 'p');
+  } else if (m.k == 'gym' || m.k == 'palace') for (let y = 3; y <= 8; y++) set(7, y, 'c');
+  else if (m.k == 'center') for (let y = 5; y <= 8; y++) for (let x = 6; x <= 8; x++) set(x, y, 'c');
+});
 // application installable : le service worker met le jeu en cache (hors ligne)
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol))
   navigator.serviceWorker.register('sw.js').catch(() => {});

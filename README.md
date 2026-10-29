@@ -18,13 +18,16 @@ Ouvrir `index.html` dans un navigateur (ordinateur ou mobile). Tout est inclus, 
 | B (retour ; maintenu = courir) | X | Bouton B |
 | START (menu) | Entrée | START |
 | SELECT | P | SELECT |
+| Raccourcis | E équipe, B sac, Q quêtes, V bestiaire, H histoire, G chemin, T vue 3D | — |
 
 ## Contenu
 
 - 100 espèces de créatures, 5 types (Feu, Eau, Plante, Vol, Normal) avec évolutions
 - 64 cartes : villes, routes, forêt, grotte, plage, intérieurs, Ligue…
 - Histoire en plusieurs actes (dont l'Aube dorée, l'archipel des étoiles, les Terres d'Aube)
-- Combats au tour par tour, arènes, cinématiques, personnalisation du héros
+- Combats au tour par tour (simples et doubles) : 38 attaques, dont une attaque propre à chaque espèce (statuts, soins, priorité, hausse et baisse de caractéristiques)
+- Arènes, cinématiques, personnalisation du héros
+- Musique à plusieurs voix : 12 morceaux selon le lieu et le type de combat
 - Vue 2D en tuiles et mode 3D (raycasting) activable avec le bouton « 3D »
 - 3 emplacements de sauvegarde (stockés dans le `localStorage` du navigateur)
 - Réglage automatique de la qualité graphique selon les performances de l'appareil

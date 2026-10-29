@@ -248,3 +248,63 @@ test('application installable : service worker et jeu hors ligne', async ({ page
   expect(await page.evaluate(() => SP.length)).toBe(100);
   await context.setOffline(false);
 });
+
+test('intérieurs : chaque personnage reste accessible depuis la porte', async ({ page }) => {
+  await openWithSave(page);
+  const blocked = await page.evaluate(() =>
+    maps
+      .map((m, mi) => {
+        if (!m.in || m.k == 'cave' || m.k == 'secret') return null;
+        const g = m.g,
+          D = [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1]
+          ],
+          seen = new Set(['7,8']),
+          q = [[7, 8]];
+        while (q.length) {
+          const [x, y] = q.shift();
+          if (D.some(([a, b]) => g[y + b]?.[x + a] == 'N')) return null;
+          for (const [a, b] of D) {
+            const nx = x + a,
+              ny = y + b,
+              c = g[ny]?.[nx];
+            if (!c || seen.has(nx + ',' + ny) || SOLID.includes(c) || c == 'X') continue;
+            seen.add(nx + ',' + ny);
+            q.push([nx, ny]);
+          }
+        }
+        return m.n;
+      })
+      .filter(Boolean)
+  );
+  expect(blocked).toEqual([]);
+});
+
+test('musique : les morceaux sont complets et ne saturent pas', async ({ page }) => {
+  await page.goto('/index.html');
+  const r = await page.evaluate(async () => {
+    const out = [];
+    for (const k in TRK) {
+      const T = TRK[k],
+        st = 60 / T.bpm / 4,
+        ctx = new OfflineAudioContext(1, Math.ceil(22050 * (32 * st + 1)), 22050),
+        g = ctx.createGain();
+      g.gain.value = 0.6; // volume maximum
+      g.connect(ctx.destination);
+      for (let s = 0; s < 32; s++) musStep(ctx, g, T, s, 0.05 + s * st);
+      const d = (await ctx.startRendering()).getChannelData(0);
+      let pk = 0;
+      for (const v of d) pk = Math.max(pk, Math.abs(v));
+      out.push([k, T.notes.length, pk < 0.95, pk > 0.02]);
+    }
+    return out;
+  });
+  for (const [k, n, noClip, audible] of r) {
+    expect(n, k + ' : 8 mesures de 8 croches').toBe(64);
+    expect(noClip, k + ' ne sature pas').toBeTruthy();
+    expect(audible, k + ' est audible').toBeTruthy();
+  }
+});

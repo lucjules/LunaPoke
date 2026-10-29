@@ -538,6 +538,21 @@ function texIn(k) {
     if (y < 17) return y == 10 ? [240, 200, 70] : [140, 90, 45];
     return [150, 98, 52];
   });
+  // tapis (sol) et cheminée
+  t.rug = mkT((x, y) => {
+    if (x < 2 || x > 29 || y < 2 || y > 29) return [217, 180, 90];
+    return jt([142, 43, 58], ((x + y) % 8 == 0 ? 30 : 0) + (n3(x, y, 25) - 0.5) * 10);
+  });
+  t.hearth = mkT((x, y) => {
+    if (x >= 7 && x <= 24 && y >= 12) {
+      if (y >= 22 && Math.abs(x - 16) < 9 - (y - 22) * 0.2) return [255, 140 + (y - 22) * 8, 40, 2];
+      return [40, 28, 22];
+    }
+    return jt(
+      [138, 132, 120],
+      (y % 8 == 0 || (x + (y >> 3) * 8) % 16 == 0 ? -30 : 0) + (n3(x, y, 26) - 0.5) * 12
+    );
+  });
   return t;
 }
 const FLOORKEY = { '.': 'grass', f: 'flower', g: 'tall', w: 'water', j: 'bridge', '=': 'stone', _: 'sand' };
@@ -703,6 +718,8 @@ const WKI = {
   b: ['bed', 0.45],
   r: ['rock', 0.6],
   o: ['chest', 0.45],
+  a: ['counter', 0.42],
+  h: ['hearth', 1],
   N: null
 };
 function v3Face0() {
@@ -1119,7 +1136,7 @@ function r3(o) {
         cy0 = Math.floor(fy),
         c = g[cy0]?.[cx0];
       let T;
-      if (inn) T = c == 'X' ? TX.f0 : (cx0 + cy0) & 1 ? TX.f1 : TX.f0;
+      if (inn) T = c == 'X' ? TX.f0 : c == 'c' ? TX.rug : (cx0 + cy0) & 1 ? TX.f1 : TX.f0;
       else {
         const k = FLOORKEY[c];
         T = k ? TX[k] : c === undefined || SOLID.includes(c) ? TX.grass : stone;

@@ -504,7 +504,7 @@ function gym() {
     }
   });
 }
-const SOLID = '#HTwNkpsmbroFZyzqu';
+const SOLID = '#HTwNkpsmbroFZyzquah'; // a = table, h = cheminée (intérieurs)
 const npAt = (x, y) => NP.find(n => n.m == G.map && n.x == x && n.y == y);
 function back() {
   ry += 1.2;
