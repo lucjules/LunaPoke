@@ -60,7 +60,11 @@ self.addEventListener('activate', e => {
   e.waitUntil(
     caches
       .keys()
-      .then(keys => Promise.all(keys.filter(k => k != CACHE).map(k => caches.delete(k))))
+      // seulement les anciens caches du jeu : les autres sites de lucjules.github.io (les cours…)
+      // partagent la même origine, donc la même liste de caches
+      .then(keys =>
+        Promise.all(keys.filter(k => k.startsWith('aerelia') && k != CACHE).map(k => caches.delete(k)))
+      )
       .then(() => self.clients.claim())
   );
 });

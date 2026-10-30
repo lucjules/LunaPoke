@@ -123,8 +123,7 @@ test('chaque attaque propre produit son effet', async ({ page }) => {
     if (e.heal || e.drain) expect(r[k].healed, k + ' soigne').toBeTruthy();
     if (e.st) expect(r[k].st, k + ' inflige un statut').toBe(e.st);
     if (e.a || e.d) {
-      const t = e.me ? r[k] : r[k];
-      const bs = e.me ? t.a : t.d;
+      const bs = e.me ? r[k].a : r[k].d;
       expect(bs[e.a ? 'a' : 'd'], k + ' modifie une caractéristique').toBe(e.a || e.d);
     }
   }
@@ -224,7 +223,7 @@ test('une sauvegarde importée piégée est nettoyée', async ({ page }) => {
     const g = JSON.parse(JSON.stringify(G));
     g.pn = '<img src=x onerror=alert(1)>';
     g.party[0].nick = '"><b>x';
-    g.party.push({ s: 'abc' });
+    g.party.push({ s: 'abc' }, { s: 999, lv: 5, hp: 5, mh: 5 });
     $('sv').value = JSON.stringify(g);
     $('im').click();
     toTitle();
@@ -239,10 +238,36 @@ test('une sauvegarde importée piégée est nettoyée', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('une sauvegarde abîmée n’empêche pas le démarrage', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/index.html');
+  await page.evaluate(() => {
+    localStorage.clear();
+    const g = newG();
+    // espèce inconnue (999) à côté d'une créature des actes III-IV (ajoutées après state.js)
+    g.party = [mkC(0, 10), { s: 999, lv: 5, hp: 5, mh: 5 }, mkC(SP.length - 1, 30)];
+    g.f.s = 1;
+    G = g; // le jeu sauvegarde la partie en cours en quittant la page
+    localStorage.setItem('aerelia', JSON.stringify(g));
+    localStorage.setItem('aerelia_2', JSON.stringify({ party: [{ s: 999, lv: 5 }] }));
+    localStorage.setItem('aerelia_3', '42');
+  });
+  await page.reload();
+  await page.waitForTimeout(500);
+  expect(
+    await page.evaluate(() => [G.party.map(c => c.s), $('slots').querySelectorAll('.sl').length])
+  ).toEqual([[0, 99], 3]);
+  expect(errors).toEqual([]);
+});
+
 test('application installable : service worker et jeu hors ligne', async ({ page, context }) => {
+  // un autre site de la même adresse (les cours) a son propre cache : le jeu ne doit pas l'effacer
+  await page.goto('/manifest.webmanifest');
+  await page.evaluate(() => caches.open('mes-cours-test').then(c => c.put('/x', new Response('x'))));
   await page.goto('/index.html');
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.waitForTimeout(500);
+  expect(await page.evaluate(() => caches.keys())).toContain('mes-cours-test');
   await context.setOffline(true);
   await page.reload();
   expect(await page.evaluate(() => SP.length)).toBe(100);

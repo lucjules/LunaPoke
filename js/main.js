@@ -72,6 +72,9 @@ layout();
     $('tmo').innerHTML = [0, 1, 2].map(i => spr(i, 64)).join('');
   } catch (e) {}
 })();
+// toutes les espèces sont chargées : on écarte les créatures au numéro inconnu (sauvegarde abîmée)
+fixSave.all = 1;
+G = fixSave(G);
 draw();
 busy = true;
 renderSlots();
